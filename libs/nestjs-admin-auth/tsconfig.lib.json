@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "noEmit": false,
+    "noEmitOnError": true,
+    "outDir": "../../dist/libs/nestjs-admin-auth",
+    "rootDir": "./src",
+    "sourceMap": false,
+    "target": "ES2022"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"]
+}

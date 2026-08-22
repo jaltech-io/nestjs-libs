@@ -1,0 +1,30 @@
+{
+  "name": "nestjs-libs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bibliothèques NestJS @profeskills/* (auth, admin-auth, cache) — repo standalone, ex platform-apps/libs",
+  "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p libs/nestjs-auth/tsconfig.json && tsc --noEmit -p libs/nestjs-admin-auth/tsconfig.json && tsc --noEmit -p libs/nestjs-cache/tsconfig.json",
+    "build": "node libs/nestjs-auth/scripts/build.mjs && node libs/nestjs-admin-auth/scripts/build.mjs && node libs/nestjs-cache/scripts/build.mjs",
+    "verify": "node tools/verify-library-packages.mjs",
+    "check": "pnpm typecheck && pnpm build && pnpm verify"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^11.1.19",
+    "@nestjs/core": "^11.1.19",
+    "@types/express-session": "^1.19.0",
+    "@types/node": "^25.6.0",
+    "connect-redis": "^9.0.0",
+    "express-session": "^1.19.0",
+    "ioredis": "^5.11.1",
+    "jose": "^6.2.10",
+    "redis": "^5.12.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "typescript": "^6.0.3"
+  }
+}

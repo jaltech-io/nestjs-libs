@@ -1,0 +1,1 @@
+export { AdminAuthConfig } from './AdminAuthConfig';

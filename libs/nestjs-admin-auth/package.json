@@ -1,0 +1,65 @@
+{
+  "name": "@profeskills/nestjs-admin-auth",
+  "version": "0.2.1",
+  "description": "NestJS module for administering Keycloak users, groups, sessions, and client roles.",
+  "license": "MIT",
+  "author": "ProfesSkills",
+  "type": "commonjs",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./index.js",
+      "default": "./index.js"
+    }
+  },
+  "files": [
+    "**/*.js",
+    "**/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/jalil.mestaoui/nestjs-libs.git",
+    "directory": "libs/nestjs-admin-auth"
+  },
+  "homepage": "https://gitlab.com/jalil.mestaoui/nestjs-libs/-/tree/main/libs/nestjs-admin-auth#readme",
+  "bugs": {
+    "url": "https://gitlab.com/jalil.mestaoui/nestjs-libs/-/issues"
+  },
+  "keywords": [
+    "nestjs",
+    "keycloak",
+    "authentication",
+    "administration",
+    "users",
+    "groups"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.0"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@types/node": "^20.0.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.0",
+    "typescript": "^6.0.0"
+  }
+}
