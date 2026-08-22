@@ -105,6 +105,19 @@ export interface IAdminAuthz {
   getPermission(permissionId: string): Promise<AuthzPermission | null>;
 
   /**
+   * Crée (si absente) une permission de scope ciblant un TYPE de ressource
+   * entier (`resourceType`) au lieu d'une ressource précise — le mécanisme
+   * "défaut par type" qui évite une permission par ressource. Idempotente,
+   * ne met jamais à jour une permission existante du même nom.
+   */
+  ensureTypePermission(input: {
+    name: string;
+    resourceType: string;
+    scopeName: string;
+    policyNames: string[];
+  }): Promise<void>;
+
+  /**
    * Aligne les permissions d'une ressource sur la matrice donnée : pour chaque
    * scope, une permission nommée `perm:<ressource>:<scope>` (decisionStrategy
    * AFFIRMATIVE) reliée aux policies listées. Une entrée sans policy supprime

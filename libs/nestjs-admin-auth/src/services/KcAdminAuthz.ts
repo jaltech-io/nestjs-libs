@@ -253,6 +253,38 @@ export class KcAdminAuthz implements IAdminAuthz {
     }
   }
 
+  async ensureTypePermission(input: {
+    name: string;
+    resourceType: string;
+    scopeName: string;
+    policyNames: string[];
+  }): Promise<void> {
+    const token = await this.client.getToken();
+    const existing = await this.kcGet<{ id: string; name: string }[]>(token, '/permission/scope?max=2000');
+    if (existing.some((p) => p.name === input.name)) return;
+
+    const scope = (await this.listScopes()).find((s) => s.name === input.scopeName);
+    if (!scope) throw new Error(`[KcAdminAuthz] Scope "${input.scopeName}" introuvable`);
+
+    const allPolicies = await this.listRolePolicies();
+    const policyIds = input.policyNames.map((n) => {
+      const p = allPolicies.find((x) => x.name === n);
+      if (!p) throw new Error(`[KcAdminAuthz] Policy "${n}" introuvable`);
+      return p.id;
+    });
+
+    await this.kcSend(token, 'POST', '/permission/scope', {
+      name: input.name,
+      decisionStrategy: 'AFFIRMATIVE',
+      resourceType: input.resourceType,
+      scopes: [scope.id],
+      policies: policyIds,
+    });
+    this.logger.log(
+      `Permission de type "${input.name}" créée (${input.resourceType} × ${input.scopeName} → ${input.policyNames.join(', ')}).`,
+    );
+  }
+
   async setResourcePermissions(
     resourceName: string,
     matrix: Array<{ scopeName: string; policyNames: string[] }>,
