@@ -94,6 +94,13 @@ export interface IAdminAuthz {
 
   listPermissions(): Promise<AuthzPermission[]>;
 
+  /**
+   * Liste légère : uniquement id + nom des permissions de scope (une seule
+   * requête — pour les checks d'existence d'un seed, sans le détail par
+   * permission qui coûte 3 sous-requêtes chacune).
+   */
+  listPermissionNames(): Promise<Array<{ id: string; name: string }>>;
+
   /** Détail d'une permission (ressources, scopes, policies associés). */
   getPermission(permissionId: string): Promise<AuthzPermission | null>;
 

@@ -237,6 +237,12 @@ export class KcAdminAuthz implements IAdminAuthz {
     return Promise.all(raw.map((p) => this.permissionDetail(token, p)));
   }
 
+  async listPermissionNames(): Promise<Array<{ id: string; name: string }>> {
+    const token = await this.client.getToken();
+    const raw = await this.kcGet<{ id: string; name: string }[]>(token, '/permission/scope?max=2000');
+    return raw.map((p) => ({ id: p.id, name: p.name }));
+  }
+
   async getPermission(permissionId: string): Promise<AuthzPermission | null> {
     const token = await this.client.getToken();
     try {
