@@ -1,6 +1,6 @@
 {
   "name": "@profeskills/nestjs-auth",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Provider-agnostic authentication and authorization module for NestJS with Keycloak support.",
   "type": "module",
   "main": "./index.js",

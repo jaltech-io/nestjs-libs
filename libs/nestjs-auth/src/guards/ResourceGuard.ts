@@ -85,7 +85,14 @@ export class ResourceGuard implements CanActivate {
     }
 
     const conditionalScopesResult = conditionalScopes ? conditionalScopes(request, grant.access_token) : [];
-    const scopes = [...explicitScopes, ...conditionalScopesResult];
+    let scopes = [...explicitScopes, ...conditionalScopesResult];
+
+    // verbScopeDefaults : sans @Scopes explicite, le scope est dérivé du verbe
+    // HTTP — un seul @Resource de classe protège un contrôleur CQRS entier.
+    if (scopes.length === 0 && this.authOpts.verbScopeDefaults) {
+      const verbScope = ResourceGuard.scopeForVerb(request.method);
+      if (verbScope) scopes = [verbScope];
+    }
     request.scopes = scopes;
 
     if (!scopes || scopes.length === 0) {
@@ -102,7 +109,33 @@ export class ResourceGuard implements CanActivate {
     const isAllowed = await this.enforce(request, response, permissions, enforcerOpts);
 
     this.logger.verbose(`Resource [ ${resource} ] ${isAllowed ? 'granted' : 'denied'} to [ ${user} ]`);
+
+    // Mode observation : le refus est journalisé mais la requête passe — pour
+    // valider la matrice de permissions en conditions réelles avant blocage.
+    if (!isAllowed && this.authOpts.enforcementShadow) {
+      this.logger.warn(`AUTHZ-SHADOW denied — resource [ ${resource} ] scopes [ ${scopes} ] user [ ${user} ]`);
+      return true;
+    }
+
     return isAllowed;
+  }
+
+  /** Mapping verbe HTTP → scope d'autorisation (CQRS : GET=lecture, POST=création...). */
+  private static scopeForVerb(method: string | undefined): string | null {
+    switch ((method ?? '').toUpperCase()) {
+      case 'GET':
+      case 'HEAD':
+        return 'READ';
+      case 'POST':
+        return 'CREATE';
+      case 'PUT':
+      case 'PATCH':
+        return 'UPDATE';
+      case 'DELETE':
+        return 'DELETE';
+      default:
+        return null;
+    }
   }
 
   /** Enveloppe le middleware enforcer dans une Promise pour l'intégration avec NestJS. */

@@ -15,4 +15,18 @@ export type AuthConfig = {
   tokenValidation?: TokenValidation;
   /** Stratégie de fusion quand `@Roles()` est déclaré sur la classe et la méthode. Défaut : `OVERRIDE`. */
   roleMerge?: RoleMerge;
+  /**
+   * Quand un `@Resource()` est déclaré mais qu'aucun `@Scopes()` explicite n'existe
+   * sur le handler, dérive le scope du verbe HTTP : GET/HEAD → READ, POST → CREATE,
+   * PUT/PATCH → UPDATE, DELETE → DELETE. Permet de protéger un contrôleur CQRS
+   * entier avec un seul décorateur de classe. Défaut : `false`.
+   */
+  verbScopeDefaults?: boolean;
+  /**
+   * Mode observation du `ResourceGuard` : les refus UMA sont journalisés
+   * (`AUTHZ-SHADOW denied ...`) mais la requête est AUTORISÉE. Pour valider une
+   * matrice de permissions en conditions réelles avant d'activer le blocage.
+   * Défaut : `false` (blocage réel).
+   */
+  enforcementShadow?: boolean;
 };
