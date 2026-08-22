@@ -7,7 +7,15 @@
 export { AdminAuthModule } from './AdminAuthModule';
 
 // Tokens DI (à utiliser avec @Inject(...) dans les services de l'app)
-export { ADMIN_GROUPS, ADMIN_USERS } from './constants';
+export { ADMIN_AUTHZ, ADMIN_GROUPS, ADMIN_USERS } from './constants';
+export type {
+  AuthzPermission,
+  AuthzPolicy,
+  AuthzResource,
+  AuthzScope,
+  EnsureResourceInput,
+  IAdminAuthz,
+} from './interface/IAdminAuthz';
 export type { GroupInfo, GroupMember, IAdminGroups } from './interface/IAdminGroups';
 // Interfaces (typer les injections dans l'app)
 export type { CreateUserInput, IAdminUsers, KcSession } from './interface/IAdminUsers';

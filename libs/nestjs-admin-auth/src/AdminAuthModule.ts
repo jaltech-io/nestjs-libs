@@ -1,5 +1,6 @@
 import { type DynamicModule, Module } from '@nestjs/common';
-import { ADMIN_AUTH_OPTIONS, ADMIN_GROUPS, ADMIN_USERS } from './constants';
+import { ADMIN_AUTH_OPTIONS, ADMIN_AUTHZ, ADMIN_GROUPS, ADMIN_USERS } from './constants';
+import { KcAdminAuthz } from './services/KcAdminAuthz';
 import { KcAdminClient } from './services/KcAdminClient';
 import { KcAdminGroups } from './services/KcAdminGroups';
 import { KcAdminUsers } from './services/KcAdminUsers';
@@ -8,9 +9,11 @@ import type { AdminAuthConfig } from './types/AdminAuthConfig';
 /**
  * Module NestJS pour l'administration des utilisateurs et groupes Keycloak.
  *
- * Fournit deux tokens DI consommables par l'application :
+ * Fournit trois tokens DI consommables par l'application :
  *   - `ADMIN_USERS`  → `IAdminUsers`  (CRUD users + gestion groupes côté user)
  *   - `ADMIN_GROUPS` → `IAdminGroups` (CRUD groupes + assignation de rôles realm)
+ *   - `ADMIN_AUTHZ`  → `IAdminAuthz`  (Authorization Services : ressources,
+ *                       scopes, policies role-based, permissions de scope)
  *
  * L'app dépend uniquement des tokens et interfaces (jamais de KcAdminUsers/KcAdminGroups).
  * Pour swapper l'implémentation (ex: Auth0), fournir une autre classe derrière les tokens.
@@ -35,8 +38,9 @@ export class AdminAuthModule {
         KcAdminClient,
         { provide: ADMIN_USERS, useClass: KcAdminUsers },
         { provide: ADMIN_GROUPS, useClass: KcAdminGroups },
+        { provide: ADMIN_AUTHZ, useClass: KcAdminAuthz },
       ],
-      exports: [ADMIN_USERS, ADMIN_GROUPS],
+      exports: [ADMIN_USERS, ADMIN_GROUPS, ADMIN_AUTHZ],
     };
   }
 }

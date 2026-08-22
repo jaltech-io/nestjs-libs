@@ -1,3 +1,9 @@
+## 0.3.0 (2026-08-22)
+
+### 🚀 Features
+
+- **authz:** nouvelle interface `IAdminAuthz` (token DI `ADMIN_AUTHZ`) — pilotage des Authorization Services du client : activation, scopes, ressources, policies role-based, permissions de scope (`setResourcePermissions` avec matrice scope × policies, refus par défaut quand aucune policy). Toutes les méthodes ensure* sont idempotentes (seed et CRUD d'interface)
+
 ## 0.2.2 (2026-08-22)
 
 ### 🚀 Features

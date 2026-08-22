@@ -1,6 +1,6 @@
 {
   "name": "@profeskills/nestjs-admin-auth",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "NestJS module for administering Keycloak users, groups, sessions, and client roles.",
   "license": "MIT",
   "author": "ProfesSkills",

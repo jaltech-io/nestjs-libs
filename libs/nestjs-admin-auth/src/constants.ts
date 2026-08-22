@@ -6,3 +6,6 @@ export const ADMIN_USERS = 'ADMIN_USERS';
 
 /** Token DI : implémentation IAdminGroups (Keycloak par défaut, swappable) */
 export const ADMIN_GROUPS = 'ADMIN_GROUPS';
+
+/** Token DI : implémentation IAdminAuthz (Authorization Services, swappable) */
+export const ADMIN_AUTHZ = 'ADMIN_AUTHZ';
