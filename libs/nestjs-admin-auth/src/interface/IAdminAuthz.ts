@@ -57,6 +57,14 @@ export interface IAdminAuthz {
    */
   ensureAuthorizationEnabled(): Promise<void>;
 
+  /**
+   * Aligne la stratégie de décision GLOBALE du resource-server. AFFIRMATIVE est
+   * requise pour le modèle « défauts par type + exceptions par ressource » :
+   * en UNANIMOUS (défaut Keycloak), un DENY d'une permission de type écrase le
+   * PERMIT d'une exception — les octrois ne s'additionneraient jamais.
+   */
+  ensureDecisionStrategy(strategy: 'AFFIRMATIVE' | 'UNANIMOUS' | 'CONSENSUS'): Promise<void>;
+
   // ── Scopes ────────────────────────────────────────────────────────────────
 
   listScopes(): Promise<AuthzScope[]>;

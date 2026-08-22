@@ -91,6 +91,18 @@ export class KcAdminAuthz implements IAdminAuthz {
     this.logger.log(`Authorization Services activés sur le client ${this.client.clientId}.`);
   }
 
+  async ensureDecisionStrategy(strategy: 'AFFIRMATIVE' | 'UNANIMOUS' | 'CONSENSUS'): Promise<void> {
+    const token = await this.client.getToken();
+    const settings = await this.kcGet<{ id: string; decisionStrategy?: string; allowRemoteResourceManagement?: boolean; policyEnforcementMode?: string }>(
+      token,
+      '',
+    );
+    if (settings.decisionStrategy === strategy) return;
+
+    await this.kcSend(token, 'PUT', '', { ...settings, decisionStrategy: strategy });
+    this.logger.log(`Stratégie de décision du resource-server: ${settings.decisionStrategy ?? '?'} → ${strategy}.`);
+  }
+
   // ── Scopes ────────────────────────────────────────────────────────────────
 
   async listScopes(): Promise<AuthzScope[]> {
