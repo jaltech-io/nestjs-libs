@@ -35,6 +35,19 @@ export class InMemoryCache<T> implements ICache<T> {
     this.store.delete(key);
   }
 
+  async deleteByPattern(pattern: string): Promise<number> {
+    // Glob minimal : seul `*` est supporté, le reste est échappé littéralement.
+    const regex = new RegExp(`^${pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')}$`);
+    let deleted = 0;
+    for (const key of this.store.keys()) {
+      if (regex.test(key)) {
+        this.store.delete(key);
+        deleted++;
+      }
+    }
+    return deleted;
+  }
+
   /** Supprime les entrées expirées pour éviter les fuites mémoire. */
   private evict(): void {
     const now = Date.now();

@@ -47,6 +47,18 @@ export class RedisCache<T> implements ICache<T> {
     await this.redis.del(this.prefixed(key));
   }
 
+  async deleteByPattern(pattern: string): Promise<number> {
+    // SCAN (jamais KEYS — bloquant) par lots, MATCH sur le motif préfixé.
+    let cursor = '0';
+    let deleted = 0;
+    do {
+      const [next, keys] = await this.redis.scan(cursor, 'MATCH', this.prefixed(pattern), 'COUNT', 200);
+      cursor = next;
+      if (keys.length > 0) deleted += await this.redis.del(...keys);
+    } while (cursor !== '0');
+    return deleted;
+  }
+
   private prefixed(key: string): string {
     return `${this.namespace}:${key}`;
   }

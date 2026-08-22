@@ -34,4 +34,17 @@ export interface ICache<T> {
 
   /** Supprime une entrée avant son expiration. */
   delete(key: string): Promise<void>;
+
+  /**
+   * Supprime toutes les entrées dont la clé correspond au motif glob
+   * (`*` = n'importe quelle séquence). Le motif s'applique à la clé logique,
+   * sans le namespace (ajouté en interne par l'implémentation Redis).
+   *
+   * Cas d'usage : invalider un sous-ensemble de décisions cachées quand la
+   * donnée source change (ex. permissions d'une ressource — motif `*:orgs:*`).
+   *
+   * @param pattern - Motif glob (ex. `*:orgs:*`).
+   * @returns Nombre d'entrées supprimées.
+   */
+  deleteByPattern(pattern: string): Promise<number>;
 }
