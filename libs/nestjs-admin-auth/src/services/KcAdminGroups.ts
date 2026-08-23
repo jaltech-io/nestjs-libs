@@ -58,6 +58,34 @@ export class KcAdminGroups implements IAdminGroups {
     this.logger.log(`Client role "${roleName}" créé sous ${this.client.clientId}.`);
   }
 
+  async ensureCompositeRole(parentRoleName: string, childRoleName: string): Promise<void> {
+    const token = await this.client.getToken();
+    const clientUuid = await this.getClientUuid(token);
+    const roleUrl = (name: string) => `${this.client.adminUrl}/clients/${clientUuid}/roles/${encodeURIComponent(name)}`;
+
+    const childRes = await fetch(roleUrl(childRoleName), { headers: { Authorization: `Bearer ${token}` } });
+    if (!childRes.ok)
+      throw new Error(`[KcAdminGroups] ensureCompositeRole: rôle enfant "${childRoleName}" introuvable (${childRes.status})`);
+    const child: { id: string; name: string } = await childRes.json();
+
+    const compositesRes = await fetch(`${roleUrl(parentRoleName)}/composites`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!compositesRes.ok)
+      throw new Error(`[KcAdminGroups] ensureCompositeRole: rôle parent "${parentRoleName}" introuvable (${compositesRes.status})`);
+    const composites: { name: string }[] = await compositesRes.json();
+    if (composites.some((c) => c.name === childRoleName)) return;
+
+    const add = await fetch(`${roleUrl(parentRoleName)}/composites`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify([{ id: child.id, name: child.name }]),
+    });
+    if (!add.ok)
+      throw new Error(`[KcAdminGroups] ensureCompositeRole ${parentRoleName} ⊃ ${childRoleName}: ${add.status} ${await add.text()}`);
+    this.logger.log(`Rôle composite : ${parentRoleName} inclut désormais ${childRoleName}.`);
+  }
+
   async assignRole(groupId: string, roleName: string): Promise<void> {
     const token = await this.client.getToken();
     const clientUuid = await this.getClientUuid(token);

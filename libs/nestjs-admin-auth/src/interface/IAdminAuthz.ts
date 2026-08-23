@@ -121,19 +121,22 @@ export interface IAdminAuthz {
   ensureTypePermission(input: {
     name: string;
     resourceType: string;
-    scopeName: string;
+    scopeNames: string[];
     policyNames: string[];
   }): Promise<void>;
 
   /**
-   * Aligne les permissions d'une ressource sur la matrice donnée : pour chaque
-   * scope, une permission nommée `perm:<ressource>:<scope>` (decisionStrategy
-   * AFFIRMATIVE) reliée aux policies listées. Une entrée sans policy supprime
-   * la permission correspondante (retour au refus par défaut). Idempotent.
+   * Aligne les permissions d'une ressource sur les octrois donnés — UNE
+   * permission par policy, nommée `<policy>:<ressource>:<SCOPE1>:<SCOPE2>...`
+   * (scopes dans l'ordre fourni), portant tous les scopes accordés à cette
+   * policy. Le nom se lit donc comme la phrase complète de l'octroi
+   * (ex: `role:tenant_admin:activity:READ:UPDATE`) ; changer les scopes
+   * renomme la permission. Un octroi sans scope supprime la permission de
+   * cette policy (retour au refus par défaut). Idempotent.
    */
   setResourcePermissions(
     resourceName: string,
-    matrix: Array<{ scopeName: string; policyNames: string[] }>,
+    grants: Array<{ policyName: string; scopeNames: string[] }>,
   ): Promise<void>;
 
   /** Supprime une permission par id. */

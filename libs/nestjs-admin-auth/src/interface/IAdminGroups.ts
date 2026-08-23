@@ -20,6 +20,14 @@ export interface IAdminGroups {
   createRole(roleName: string, description?: string): Promise<void>;
 
   /**
+   * Déclare `childRoleName` comme composant de `parentRoleName` (rôles composites) :
+   * tout porteur du rôle parent porte alors effectivement le rôle enfant — le moteur
+   * d'évaluation (role policies comprises) traite la composition nativement.
+   * Les deux rôles doivent exister (client roles). Idempotent.
+   */
+  ensureCompositeRole(parentRoleName: string, childRoleName: string): Promise<void>;
+
+  /**
    * Crée le groupe dans l'IdP. Retourne son identifiant interne.
    * Avec `parentId`, le groupe est créé comme sous-groupe de `parentId` (arborescence),
    * plutôt qu'au niveau racine.

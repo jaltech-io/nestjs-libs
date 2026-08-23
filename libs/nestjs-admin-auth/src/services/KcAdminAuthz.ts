@@ -161,19 +161,23 @@ export class KcAdminAuthz implements IAdminAuthz {
     const existing = await this.findResourceByName(input.name);
     if (existing) {
       const missing = scopes.filter((s) => !existing.scopes.some((es) => es.name === s.name));
-      if (missing.length === 0) return existing;
+      const typeChanged = input.type !== undefined && existing.type !== input.type;
+      if (missing.length === 0 && !typeChanged) return existing;
 
-      // Complète les scopes manquants sans toucher au reste de la ressource.
+      // Complète les scopes manquants et/ou aligne le type, sans toucher au reste.
       const merged = [...existing.scopes, ...missing];
+      const type = typeChanged ? input.type : existing.type;
       await this.kcSend(token, 'PUT', `/resource/${existing.id}`, {
         _id: existing.id,
         name: existing.name,
         displayName: existing.displayName,
-        type: existing.type,
+        type,
         scopes: merged.map((s) => ({ id: s.id, name: s.name })),
       });
-      this.logger.log(`Ressource "${input.name}" : scopes complétés (${missing.map((s) => s.name).join(', ')}).`);
-      return { ...existing, scopes: merged };
+      if (missing.length > 0)
+        this.logger.log(`Ressource "${input.name}" : scopes complétés (${missing.map((s) => s.name).join(', ')}).`);
+      if (typeChanged) this.logger.log(`Ressource "${input.name}" : type ${existing.type ?? '∅'} → ${input.type}.`);
+      return { ...existing, type, scopes: merged };
     }
 
     const res = await this.kcSend(token, 'POST', '/resource', {
@@ -268,15 +272,19 @@ export class KcAdminAuthz implements IAdminAuthz {
   async ensureTypePermission(input: {
     name: string;
     resourceType: string;
-    scopeName: string;
+    scopeNames: string[];
     policyNames: string[];
   }): Promise<void> {
     const token = await this.client.getToken();
     const existing = await this.kcGet<{ id: string; name: string }[]>(token, '/permission/scope?max=2000');
     if (existing.some((p) => p.name === input.name)) return;
 
-    const scope = (await this.listScopes()).find((s) => s.name === input.scopeName);
-    if (!scope) throw new Error(`[KcAdminAuthz] Scope "${input.scopeName}" introuvable`);
+    const allScopes = await this.listScopes();
+    const scopeIds = input.scopeNames.map((n) => {
+      const s = allScopes.find((x) => x.name === n);
+      if (!s) throw new Error(`[KcAdminAuthz] Scope "${n}" introuvable`);
+      return s.id;
+    });
 
     const allPolicies = await this.listRolePolicies();
     const policyIds = input.policyNames.map((n) => {
@@ -289,63 +297,66 @@ export class KcAdminAuthz implements IAdminAuthz {
       name: input.name,
       decisionStrategy: 'AFFIRMATIVE',
       resourceType: input.resourceType,
-      scopes: [scope.id],
+      scopes: scopeIds,
       policies: policyIds,
     });
     this.logger.log(
-      `Permission de type "${input.name}" créée (${input.resourceType} × ${input.scopeName} → ${input.policyNames.join(', ')}).`,
+      `Permission de type "${input.name}" créée (${input.resourceType} × ${input.scopeNames.join(':')} → ${input.policyNames.join(', ')}).`,
     );
   }
 
   async setResourcePermissions(
     resourceName: string,
-    matrix: Array<{ scopeName: string; policyNames: string[] }>,
+    grants: Array<{ policyName: string; scopeNames: string[] }>,
   ): Promise<void> {
     const token = await this.client.getToken();
     const resource = await this.findResourceByName(resourceName);
     if (!resource) throw new Error(`[KcAdminAuthz] Ressource "${resourceName}" introuvable`);
 
     const allPolicies = await this.listRolePolicies();
-    const existingPerms = await this.kcGet<{ id: string; name: string }[]>(
-      token,
-      `/permission/scope?max=2000`,
-    );
+    const existingPerms = await this.kcGet<{ id: string; name: string }[]>(token, `/permission/scope?max=2000`);
 
-    for (const entry of matrix) {
-      const permName = `perm:${resourceName}:${entry.scopeName}`;
-      const existing = existingPerms.find((p) => p.name === permName);
-      const scope = resource.scopes.find((s) => s.name === entry.scopeName);
-      if (!scope) throw new Error(`[KcAdminAuthz] Scope "${entry.scopeName}" absent de la ressource "${resourceName}"`);
+    for (const grant of grants) {
+      // Une permission par policy — le nom encode l'octroi complet ; l'existante
+      // se retrouve par son préfixe stable `<policy>:<ressource>:` (les scopes
+      // en suffixe changent avec l'octroi, le nom est renommé en conséquence).
+      const prefix = `${grant.policyName}:${resourceName}:`;
+      const permName = `${grant.policyName}:${resourceName}:${grant.scopeNames.join(':')}`;
+      const existing = existingPerms.find((p) => p.name.startsWith(prefix));
 
-      // Aucune policy -> pas de permission -> refus par défaut.
-      if (entry.policyNames.length === 0) {
+      // Aucun scope -> pas de permission pour cette policy -> refus par défaut.
+      if (grant.scopeNames.length === 0) {
         if (existing) {
           await this.kcSend(token, 'DELETE', `/policy/${existing.id}`);
-          this.logger.log(`Permission "${permName}" supprimée (retour au refus par défaut).`);
+          this.logger.log(`Permission "${existing.name}" supprimée (retour au refus par défaut).`);
         }
         continue;
       }
 
-      const policyIds = entry.policyNames.map((n) => {
-        const p = allPolicies.find((x) => x.name === n);
-        if (!p) throw new Error(`[KcAdminAuthz] Policy "${n}" introuvable`);
-        return p.id;
+      const scopeIds = grant.scopeNames.map((n) => {
+        const s = resource.scopes.find((x) => x.name === n);
+        if (!s) throw new Error(`[KcAdminAuthz] Scope "${n}" absent de la ressource "${resourceName}"`);
+        return s.id;
       });
+
+      const policy = allPolicies.find((x) => x.name === grant.policyName);
+      if (!policy) throw new Error(`[KcAdminAuthz] Policy "${grant.policyName}" introuvable`);
 
       const body = {
         name: permName,
         decisionStrategy: 'AFFIRMATIVE',
         resources: [resource.id],
-        scopes: [scope.id],
-        policies: policyIds,
+        scopes: scopeIds,
+        policies: [policy.id],
       };
 
       if (existing) {
+        if (existing.name === permName) continue; // octroi inchangé
         await this.kcSend(token, 'PUT', `/permission/scope/${existing.id}`, { id: existing.id, ...body });
-        this.logger.log(`Permission "${permName}" mise à jour (${entry.policyNames.join(', ')}).`);
+        this.logger.log(`Permission "${existing.name}" → "${permName}".`);
       } else {
         await this.kcSend(token, 'POST', '/permission/scope', body);
-        this.logger.log(`Permission "${permName}" créée (${entry.policyNames.join(', ')}).`);
+        this.logger.log(`Permission "${permName}" créée.`);
       }
     }
   }
