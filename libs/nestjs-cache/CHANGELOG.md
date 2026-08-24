@@ -1,3 +1,9 @@
+## 0.3.1 (2026-08-24)
+
+### 🩹 Fixes
+
+- **release:** première publication pilotée par la CI de la FORGE de ProjectFlow (Forgejo Actions, workflow release sur tag) — la chaîne npm ne passe plus par un poste local
+
 ## 0.2.4 (2026-07-19)
 
 ### 🚀 Features
