@@ -1,18 +1,13 @@
 # CI Forgejo Actions — la FORGE de ProjectFlow est la maison du code.
 # Conversion du .gitlab-ci.yml (conservé pour référence) :
 #   verification — push sur main : install + pnpm check (typecheck + build + verify)
-#   publication  — tag "<lib>@<version>" (ex: nestjs-auth@0.3.1) : mêmes
-#                  validations que le job deploy GitLab, puis npm publish.
-#                  Secret requis côté forge : NPM_TOKEN (secret d'organisation).
 name: ci
 on:
   push:
     branches: [main]
-    tags: ['*@*']
 
 jobs:
   verification:
-    if: github.ref_type != 'tag'
     runs-on: docker
     container:
       image: node:22.18.0-bookworm
@@ -22,74 +17,3 @@ jobs:
         run: corepack enable && corepack prepare pnpm@10.12.1 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
-
-  publication:
-    if: github.ref_type == 'tag'
-    runs-on: docker
-    container:
-      image: node:22.18.0-bookworm
-    steps:
-      - uses: https://code.forgejo.org/actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Outillage pnpm + npm
-        run: |
-          npm install --global npm@11.18.0
-          corepack enable && corepack prepare pnpm@10.12.1 --activate
-      - name: Valider, construire et publier la lib du tag
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          TAG: ${{ github.ref_name }}
-          COMMIT_SHA: ${{ github.sha }}
-        run: |
-          set -eu
-          PROJECT="${TAG%@*}"
-          VERSION="${TAG#*@}"
-          case "$TAG" in
-            "$PROJECT@$VERSION") ;;
-            *) echo "❌ Tag $TAG invalide (attendu: <lib>@<version>)"; exit 1 ;;
-          esac
-
-          PACKAGE_JSON="libs/$PROJECT/package.json"
-          test -f "$PACKAGE_JSON" || { echo "❌ $PACKAGE_JSON introuvable"; exit 1; }
-
-          EXPECTED_NAME="@profeskills/$PROJECT"
-          PACKAGE_NAME=$(node -p "require('./$PACKAGE_JSON').name")
-          PACKAGE_VERSION=$(node -p "require('./$PACKAGE_JSON').version")
-          PACKAGE_LICENSE=$(node -p "require('./$PACKAGE_JSON').license")
-          PACKAGE_PRIVATE=$(node -p "String(require('./$PACKAGE_JSON').private === true)")
-          PACKAGE_ACCESS=$(node -p "require('./$PACKAGE_JSON').publishConfig?.access ?? ''")
-
-          [ "$PACKAGE_NAME" = "$EXPECTED_NAME" ] || { echo "❌ Nom de package $PACKAGE_NAME != $EXPECTED_NAME"; exit 1; }
-          [ "$PACKAGE_VERSION" = "$VERSION" ] || { echo "❌ Version du tag ($VERSION) != package.json ($PACKAGE_VERSION)"; exit 1; }
-          [ "$PACKAGE_LICENSE" = "MIT" ] || { echo "❌ La license doit etre MIT"; exit 1; }
-          [ "$PACKAGE_PRIVATE" = "false" ] || { echo "❌ Le package est marque private"; exit 1; }
-          [ "$PACKAGE_ACCESS" = "public" ] || { echo "❌ publishConfig.access doit etre 'public'"; exit 1; }
-
-          git config --global --add safe.directory "$(pwd)"
-          git fetch origin main --quiet
-          git merge-base --is-ancestor "$COMMIT_SHA" origin/main || { echo "❌ Le commit tagge doit appartenir a main"; exit 1; }
-
-          pnpm install --frozen-lockfile
-          pnpm check
-
-          DIST_DIR="dist/libs/$PROJECT"
-          test -d "$DIST_DIR" || { echo "❌ $DIST_DIR introuvable apres build"; exit 1; }
-
-          BUILT_NAME=$(node -p "require('./$DIST_DIR/package.json').name")
-          BUILT_VERSION=$(node -p "require('./$DIST_DIR/package.json').version")
-          [ "$BUILT_NAME" = "$EXPECTED_NAME" ] || { echo "❌ Package construit: nom invalide"; exit 1; }
-          [ "$BUILT_VERSION" = "$VERSION" ] || { echo "❌ Package construit: version invalide"; exit 1; }
-          test -f "$DIST_DIR/$(node -p "require('./$DIST_DIR/package.json').main")" || { echo "❌ Entree 'main' manquante"; exit 1; }
-          test -f "$DIST_DIR/$(node -p "require('./$DIST_DIR/package.json').types")" || { echo "❌ Entree 'types' manquante"; exit 1; }
-
-          npm pack "$DIST_DIR" --dry-run
-
-          case "$VERSION" in
-            *-*) NPM_DIST_TAG="next" ;;
-            *)   NPM_DIST_TAG="latest" ;;
-          esac
-
-          npm config set //registry.npmjs.org/:_authToken "${NPM_TOKEN}"
-          npm publish "$DIST_DIR" --access public --tag "$NPM_DIST_TAG"
-          echo "✅ Publie $PACKAGE_NAME@$VERSION sur npm (dist-tag: $NPM_DIST_TAG)"
