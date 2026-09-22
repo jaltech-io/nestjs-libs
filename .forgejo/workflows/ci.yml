@@ -1,5 +1,5 @@
 # CI Forgejo Actions — la FORGE de ProjectFlow est la maison du code.
-# Conversion de l'ancien .gitlab-ci.yml (archivé sur GitLab) :
+# Converti depuis l'ancien pipeline CI historique :
 #   verification — push sur main : install + pnpm check (typecheck + build + verify)
 name: ci
 on:

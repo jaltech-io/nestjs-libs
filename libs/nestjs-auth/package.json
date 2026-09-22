@@ -26,12 +26,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/jalil.mestaoui/nestjs-libs.git",
+    "url": "git+https://forge.profeskills.com/jal-group/nestjs-libs.git",
     "directory": "libs/nestjs-auth"
   },
-  "homepage": "https://gitlab.com/jalil.mestaoui/nestjs-libs/-/tree/main/libs/nestjs-auth#readme",
+  "homepage": "https://forge.profeskills.com/jal-group/nestjs-libs/src/branch/main/libs/nestjs-auth#readme",
   "bugs": {
-    "url": "https://gitlab.com/jalil.mestaoui/nestjs-libs/-/issues"
+    "url": "https://forge.profeskills.com/jal-group/nestjs-libs/issues"
   },
   "license": "MIT",
   "author": "ProfesSkills",

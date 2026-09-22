@@ -76,7 +76,7 @@ for (const project of libraries) {
   if (manifest.publishConfig?.registry && manifest.publishConfig.registry !== 'https://registry.npmjs.org/') {
     fail(`${project}: unexpected npm registry ${manifest.publishConfig.registry}`);
   }
-  if (!String(manifest.repository?.url ?? '').includes('gitlab.com/jalil.mestaoui/nestjs-libs')) {
+  if (!String(manifest.repository?.url ?? '').includes('forge.profeskills.com/jal-group/nestjs-libs')) {
     fail(`${project}: repository metadata does not point to the nestjs-libs repo`);
   }
 

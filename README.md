@@ -29,7 +29,7 @@ pnpm check        # typecheck + build + verify (le gate complet)
 
 Une version contenant un `-` (ex `0.3.0-beta.1`) part sous le dist-tag `next`, sinon `latest`.
 
-## Variables CI/CD requises (GitLab > Settings > CI/CD > Variables)
+## Variables CI/CD requises (Forgejo > Settings > Actions > Secrets)
 
 | Variable | Rôle |
 |---|---|

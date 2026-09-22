@@ -1,5 +1,5 @@
 # Publication npm — déclenchée par un tag "<lib>@<version>" poussé sur la
-# forge (mêmes validations que le job deploy de l'ancien .gitlab-ci.yml (archivé sur GitLab)).
+# forge (mêmes validations que le job deploy de l'ancien pipeline historique).
 # Secret requis : NPM_TOKEN (secret d'organisation jal-group).
 name: release
 on:
