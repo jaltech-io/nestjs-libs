@@ -1,6 +1,6 @@
-# Publication npm — déclenchée par un tag "<lib>@<version>" poussé sur la
-# forge (mêmes validations que le job deploy de l'ancien pipeline historique).
-# Secret requis : NPM_TOKEN (secret d'organisation jal-group).
+# Publication npm — declenchee par un tag "<lib>@<version>" pousse sur GitHub
+# (bascule 26/09/2026, remplace .forgejo/workflows/release.yml).
+# Secret requis : NPM_TOKEN (Settings -> Secrets and variables -> Actions).
 name: release
 on:
   push:
@@ -8,13 +8,14 @@ on:
 
 jobs:
   publication:
-    runs-on: docker
-    container:
-      image: node:22.18.0-bookworm
+    runs-on: ubuntu-latest
     steps:
-      - uses: https://code.forgejo.org/actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
       - name: Outillage pnpm + npm
         run: |
           npm install --global npm@11.18.0

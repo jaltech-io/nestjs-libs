@@ -1,5 +1,5 @@
-# CI Forgejo Actions — la FORGE de ProjectFlow est la maison du code.
-# Converti depuis l'ancien pipeline CI historique :
+# CI GitHub Actions — GitHub est desormais la maison du code des libs (bascule
+# 26/09/2026, remplace .forgejo/workflows/ci.yml).
 #   verification — push sur main : install + pnpm check (typecheck + build + verify)
 name: ci
 on:
@@ -8,11 +8,12 @@ on:
 
 jobs:
   verification:
-    runs-on: docker
-    container:
-      image: node:22.18.0-bookworm
+    runs-on: ubuntu-latest
     steps:
-      - uses: https://code.forgejo.org/actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
       - name: Outillage pnpm
         run: corepack enable && corepack prepare pnpm@10.12.1 --activate
       - run: pnpm install --frozen-lockfile
