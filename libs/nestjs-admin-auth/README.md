@@ -1,4 +1,4 @@
-# @profeskills/nestjs-admin-auth
+# @jaltech/nestjs-admin-auth
 
 Module NestJS pour administrer les utilisateurs, groupes, sessions et rôles client d'un realm Keycloak via son Admin REST API.
 
@@ -15,7 +15,7 @@ Le paquet expose des contrats et des tokens d'injection afin que l'application n
 Installez le paquet public depuis npm avec ses peer dependencies :
 
 ```bash
-npm install @profeskills/nestjs-admin-auth \
+npm install @jaltech/nestjs-admin-auth \
   @nestjs/common @nestjs/core reflect-metadata rxjs
 ```
 
@@ -23,7 +23,7 @@ npm install @profeskills/nestjs-admin-auth \
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { AdminAuthModule } from '@profeskills/nestjs-admin-auth';
+import { AdminAuthModule } from '@jaltech/nestjs-admin-auth';
 
 @Module({
   imports: [
@@ -49,7 +49,7 @@ import {
   type IAdminGroups,
   type IAdminUsers,
   type KcSession,
-} from '@profeskills/nestjs-admin-auth';
+} from '@jaltech/nestjs-admin-auth';
 
 @Injectable()
 export class IdentityAdministrationService {

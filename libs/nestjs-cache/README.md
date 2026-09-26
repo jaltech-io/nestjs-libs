@@ -1,4 +1,4 @@
-# @profeskills/nestjs-cache
+# @jaltech/nestjs-cache
 
 <!-- test: retest deploy:nestjs-cache after friendly no-tag error message fix -->
 
@@ -71,7 +71,7 @@ libs/nestjs-cache/src/
 ## Installation
 
 ```bash
-pnpm add @profeskills/nestjs-cache @nestjs/common express-session reflect-metadata rxjs
+pnpm add @jaltech/nestjs-cache @nestjs/common express-session reflect-metadata rxjs
 ```
 
 Dans ce monorepo, le code source reste résolu par l'alias de chemin historique défini dans `tsconfig.base.json` :
@@ -106,7 +106,7 @@ import {
     SessionStoreConfig,
     CacheExtra,
     CacheModuleAsyncOptions,
-} from '@profeskills/nestjs-cache';
+} from '@jaltech/nestjs-cache';
 ```
 
 ---
@@ -144,7 +144,7 @@ type SessionStoreConfig =
 
 ```typescript
 // app.module.ts
-import { CacheModule } from '@profeskills/nestjs-cache';
+import { CacheModule } from '@jaltech/nestjs-cache';
 
 @Module({
     imports: [
@@ -188,7 +188,7 @@ CacheModule.register({
 Injecte l'implémentation de `ICache<T>` configurée.
 
 ```typescript
-import { CACHE_STORE, ICache } from '@profeskills/nestjs-cache';
+import { CACHE_STORE, ICache } from '@jaltech/nestjs-cache';
 import { Inject }              from '@nestjs/common';
 
 @Injectable()
@@ -211,7 +211,7 @@ Récupéré dans `main.ts` pour `express-session`. Connecté automatiquement par
 
 ```typescript
 // main.ts
-import { ISessionStore, SESSION_STORE } from '@profeskills/nestjs-cache';
+import { ISessionStore, SESSION_STORE } from '@jaltech/nestjs-cache';
 import session from 'express-session';
 
 const sessionStore = app.get<ISessionStore>(SESSION_STORE);
@@ -235,7 +235,7 @@ Le tableau `extras` permet de brancher un store sous **n'importe quel token DI**
 
 ```typescript
 // app.module.ts — exemple avec le token UMA_CACHE de nestjs-auth
-import { UMA_CACHE } from '@profeskills/nestjs-auth';
+import { UMA_CACHE } from '@jaltech/nestjs-auth';
 
 CacheModule.register({
     store:        { type: 'redis', url: process.env.REDIS_URL, namespace: 'app' },
@@ -331,8 +331,8 @@ Ces classes ne sont **pas** dans l'API publique (`index.ts`). Si tu as besoin d'
 
 ```typescript
 import { Module }    from '@nestjs/common';
-import { CacheModule } from '@profeskills/nestjs-cache';
-import { UMA_CACHE, KeycloakModule, TokenValidation, PolicyEnforcementMode } from '@profeskills/nestjs-auth';
+import { CacheModule } from '@jaltech/nestjs-cache';
+import { UMA_CACHE, KeycloakModule, TokenValidation, PolicyEnforcementMode } from '@jaltech/nestjs-auth';
 
 @Module({
     imports: [

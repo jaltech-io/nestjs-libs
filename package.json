@@ -2,7 +2,7 @@
   "name": "nestjs-libs",
   "version": "1.0.0",
   "private": true,
-  "description": "Bibliothèques NestJS @profeskills/* (auth, admin-auth, cache) — repo standalone, ex platform-apps/libs",
+  "description": "Bibliothèques NestJS @jaltech/* (auth, admin-auth, cache) — repo standalone, ex platform-apps/libs",
   "packageManager": "pnpm@10.12.1",
   "engines": {
     "node": ">=20"

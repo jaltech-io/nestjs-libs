@@ -64,7 +64,7 @@ for (const project of libraries) {
   if (!existsSync(manifestPath)) fail(`${project}: missing built package.json`);
 
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-  const expectedName = `@profeskills/${project}`;
+  const expectedName = `@jaltech/${project}`;
 
   if (manifest.name !== expectedName) fail(`${project}: expected package name ${expectedName}`);
   if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(manifest.version)) {

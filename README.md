@@ -1,12 +1,12 @@
-# nestjs-libs — packages npm `@profeskills/*`
+# nestjs-libs — packages npm `@jaltech/*`
 
 Bibliothèques NestJS génériques de la plateforme (repo standalone, anciennement `platform-apps/libs/nestjs-*`). Publiées sur [npmjs.org](https://www.npmjs.com/org/profeskills), consommées comme n'importe quelle dépendance npm par les projets (projectflow et autres).
 
 | Package | Contenu |
 |---|---|
-| [`@profeskills/nestjs-auth`](libs/nestjs-auth) | Authentification Keycloak : `KeycloakModule`, guards (`AuthGuard`, `RoleGuard`, `ResourceGuard`), décorateurs (`@Public()`, `@Roles()`, `@AuthUser()`…) |
-| [`@profeskills/nestjs-admin-auth`](libs/nestjs-admin-auth) | Opérations admin Keycloak : `AdminAuthModule`, tokens DI `ADMIN_USERS`/`ADMIN_GROUPS`, interfaces `IAdminUsers`/`IAdminGroups` |
-| [`@profeskills/nestjs-cache`](libs/nestjs-cache) | Cache Redis + session store : `CacheModule`, tokens `CACHE_STORE`/`SESSION_STORE`, interfaces `ICache`/`ISessionStore` |
+| [`@jaltech/nestjs-auth`](libs/nestjs-auth) | Authentification Keycloak : `KeycloakModule`, guards (`AuthGuard`, `RoleGuard`, `ResourceGuard`), décorateurs (`@Public()`, `@Roles()`, `@AuthUser()`…) |
+| [`@jaltech/nestjs-admin-auth`](libs/nestjs-admin-auth) | Opérations admin Keycloak : `AdminAuthModule`, tokens DI `ADMIN_USERS`/`ADMIN_GROUPS`, interfaces `IAdminUsers`/`IAdminGroups` |
+| [`@jaltech/nestjs-cache`](libs/nestjs-cache) | Cache Redis + session store : `CacheModule`, tokens `CACHE_STORE`/`SESSION_STORE`, interfaces `ICache`/`ISessionStore` |
 
 **Règle inter-modules** : les libs sont isolées entre elles — aucun import croisé.
 

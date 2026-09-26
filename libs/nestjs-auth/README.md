@@ -1,4 +1,4 @@
-# @profeskills/nestjs-auth
+# @jaltech/nestjs-auth
 
 Librairie NestJS d'authentification, conçue pour être **provider-agnostic**.  
 Fonctionne avec Keycloak par défaut — remplaçable par Auth0, Okta, ou tout autre provider JWT sans toucher à l'application.
@@ -8,7 +8,7 @@ Fonctionne avec Keycloak par défaut — remplaçable par Auth0, Okta, ou tout a
 ## Installation
 
 ```bash
-pnpm add @profeskills/nestjs-auth @nestjs/common @nestjs/core reflect-metadata rxjs
+pnpm add @jaltech/nestjs-auth @nestjs/common @nestjs/core reflect-metadata rxjs
 ```
 
 Node.js 20 ou supérieur est requis. Le paquet est distribué en ESM natif.
@@ -52,7 +52,7 @@ Les guards, décorateurs, et toute l'application restent inchangés.
 
 ```typescript
 // app.module.ts
-import { KeycloakModule, TokenValidation, PolicyEnforcementMode } from '@profeskills/nestjs-auth';
+import { KeycloakModule, TokenValidation, PolicyEnforcementMode } from '@jaltech/nestjs-auth';
 
 @Module({
     imports: [
@@ -214,8 +214,8 @@ Pour partager les décisions : brancher un store Redis via le token `UMA_CACHE` 
 
 ```typescript
 // app.module.ts — composition root
-import { UMA_CACHE, KeycloakModule }  from '@profeskills/nestjs-auth';
-import { CacheModule }               from '@profeskills/nestjs-cache';
+import { UMA_CACHE, KeycloakModule }  from '@jaltech/nestjs-auth';
+import { CacheModule }               from '@jaltech/nestjs-cache';
 
 @Module({
     imports: [
@@ -251,7 +251,7 @@ Remplacer n'importe quel guard sans toucher à la lib :
 
 ```typescript
 // En développement — bypass auth
-import { AUTH_GUARD } from '@profeskills/nestjs-auth';
+import { AUTH_GUARD } from '@jaltech/nestjs-auth';
 import { DevAuthGuard } from './guards/dev-auth.guard';
 
 @Module({

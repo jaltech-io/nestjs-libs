@@ -1,5 +1,5 @@
 {
-  "name": "@profeskills/nestjs-admin-auth",
+  "name": "@jaltech/nestjs-admin-auth",
   "version": "0.3.1",
   "description": "NestJS module for administering Keycloak users, groups, sessions, and client roles.",
   "license": "MIT",

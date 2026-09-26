@@ -12,7 +12,7 @@ export const AUTH_INSTANCE = Symbol('AUTH_INSTANCE');
  *
  * @example
  * // app.module.ts — aucune classe concrète importée
- * import { UMA_CACHE } from '@profeskills/nestjs-auth';
+ * import { UMA_CACHE } from '@jaltech/nestjs-auth';
  *
  * CacheModule.register({
  *   store: { type: 'redis', url: process.env.REDIS_URL, namespace: 'app' },

@@ -37,7 +37,7 @@ jobs:
           PACKAGE_JSON="libs/$PROJECT/package.json"
           test -f "$PACKAGE_JSON" || { echo "❌ $PACKAGE_JSON introuvable"; exit 1; }
 
-          EXPECTED_NAME="@profeskills/$PROJECT"
+          EXPECTED_NAME="@jaltech/$PROJECT"
           PACKAGE_NAME=$(node -p "require('./$PACKAGE_JSON').name")
           PACKAGE_VERSION=$(node -p "require('./$PACKAGE_JSON').version")
           PACKAGE_LICENSE=$(node -p "require('./$PACKAGE_JSON').license")
