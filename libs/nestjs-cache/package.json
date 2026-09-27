@@ -7,12 +7,12 @@
   "type": "commonjs",
   "repository": {
     "type": "git",
-    "url": "git+https://forge.profeskills.com/jal-group/nestjs-libs.git",
+    "url": "git+https://github.com/jaltech-io/nestjs-libs.git",
     "directory": "libs/nestjs-cache"
   },
-  "homepage": "https://forge.profeskills.com/jal-group/nestjs-libs/src/branch/main/libs/nestjs-cache#readme",
+  "homepage": "https://github.com/jaltech-io/nestjs-libs/tree/main/libs/nestjs-cache#readme",
   "bugs": {
-    "url": "https://forge.profeskills.com/jal-group/nestjs-libs/issues"
+    "url": "https://github.com/jaltech-io/nestjs-libs/issues"
   },
   "main": "./index.js",
   "types": "./index.d.ts",
