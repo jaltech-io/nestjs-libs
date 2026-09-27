@@ -25,6 +25,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22.18.0
+          # Indispensable a l'echange OIDC du Trusted Publishing : sans cette ligne,
+          # npm ne configure pas le registre et echoue en ENEEDAUTH (constate le
+          # 27/09/2026, run release nestjs-cache@0.3.3).
+          registry-url: https://registry.npmjs.org
       - name: Outillage pnpm + npm
         run: |
           npm install --global npm@11.18.0
