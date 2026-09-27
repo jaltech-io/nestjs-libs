@@ -1,6 +1,6 @@
 {
   "name": "@jaltech/nestjs-auth",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Provider-agnostic authentication and authorization module for NestJS with Keycloak support.",
   "type": "module",
   "main": "./index.js",
