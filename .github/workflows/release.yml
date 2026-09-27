@@ -1,6 +1,9 @@
-# Publication npm — declenchee par un tag "<lib>@<version>" pousse sur GitHub
-# (bascule 26/09/2026, remplace .forgejo/workflows/release.yml).
-# Secret requis : NPM_TOKEN (Settings -> Secrets and variables -> Actions).
+# Publication npm — declenchee par un tag "<lib>@<version>" pousse sur GitHub.
+# Authentification par Trusted Publishing (OIDC) : AUCUN token npm. La confiance
+# est etablie cote npmjs (package -> Settings -> Trusted Publisher : org jaltech-io,
+# depot du package, workflow release.yml). `id-token: write` permet a Actions
+# d'emettre le jeton OIDC que npm echange a la publication. La provenance est
+# generee automatiquement.
 name: release
 on:
   push:
@@ -9,6 +12,9 @@ on:
 jobs:
   publication:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,7 +28,6 @@ jobs:
           corepack enable && corepack prepare pnpm@10.12.1 --activate
       - name: Valider, construire et publier la lib du tag
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           TAG: ${{ github.ref_name }}
           COMMIT_SHA: ${{ github.sha }}
         run: |
@@ -74,6 +79,5 @@ jobs:
             *)   NPM_DIST_TAG="latest" ;;
           esac
 
-          npm config set //registry.npmjs.org/:_authToken "${NPM_TOKEN}"
           npm publish "$DIST_DIR" --access public --tag "$NPM_DIST_TAG"
           echo "✅ Publie $PACKAGE_NAME@$VERSION sur npm (dist-tag: $NPM_DIST_TAG)"
