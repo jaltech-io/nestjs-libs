@@ -1,13 +1,9 @@
 # Publication npm — declenchee par un tag "<lib>@<version>" pousse sur GitHub.
-# Authentification par Trusted Publishing (OIDC) : AUCUN token npm. La confiance
-# est etablie cote npmjs (package -> Settings -> Trusted Publisher : org jaltech-io,
-# depot du package, workflow release.yml). `id-token: write` permet a Actions
-# d'emettre le jeton OIDC que npm echange. La provenance est generee automatiquement.
-#
-# Publication DIRECTE via OIDC (config canonique npm). Le mode staged + OIDC
-# n'etait pas encore fiable dans le CLI npm (27/09/2026) : on publie directement,
-# la securite venant du Trusted Publishing lui-meme (seul ce depot peut publier,
-# aucun token). Le trusted publisher cote npmjs doit autoriser « publish directly ».
+# Authentification par TOKEN : secret d'organisation NPM_TOKEN (token granulaire
+# avec bypass 2FA). L'OIDC Trusted Publishing a ete tente (27/09/2026) mais ne
+# s'authentifiait pas depuis la CI (ENEEDAUTH/E401/E404) ; on publie donc par token,
+# la methode qui a deja publie les 4 packages a la main. Migration vers OIDC a
+# reprendre quand la config npm du trusted publisher sera clarifiee.
 name: release
 on:
   push:
@@ -16,9 +12,6 @@ on:
 jobs:
   publication:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,16 +19,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22.18.0
-          # Indispensable a l'echange OIDC du Trusted Publishing : sans cette ligne,
-          # npm ne configure pas le registre et echoue en ENEEDAUTH (constate le
-          # 27/09/2026, run release nestjs-cache@0.3.3).
-          registry-url: https://registry.npmjs.org
       - name: Outillage pnpm + npm
         run: |
           npm install --global npm@11.18.0
           corepack enable && corepack prepare pnpm@10.12.1 --activate
       - name: Valider, construire et publier la lib du tag
         env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           TAG: ${{ github.ref_name }}
           COMMIT_SHA: ${{ github.sha }}
         run: |
@@ -87,5 +77,6 @@ jobs:
             *)   NPM_DIST_TAG="latest" ;;
           esac
 
+          npm config set //registry.npmjs.org/:_authToken "${NPM_TOKEN}"
           npm publish "$DIST_DIR" --access public --tag "$NPM_DIST_TAG"
           echo "✅ Publie $PACKAGE_NAME@$VERSION sur npm (dist-tag: $NPM_DIST_TAG)"
