@@ -2,8 +2,11 @@
 # Authentification par Trusted Publishing (OIDC) : AUCUN token npm. La confiance
 # est etablie cote npmjs (package -> Settings -> Trusted Publisher : org jaltech-io,
 # depot du package, workflow release.yml). `id-token: write` permet a Actions
-# d'emettre le jeton OIDC que npm echange a la publication. La provenance est
-# generee automatiquement.
+# d'emettre le jeton OIDC que npm echange. La provenance est generee automatiquement.
+#
+# Mode STAGED (schema d'equipe) : la CI ne publie pas en direct, elle STAGE la
+# version (`npm stage publish`). Un mainteneur l'approuve ensuite avec 2FA
+# (npmjs.com -> onglet Staged, ou `npm stage approve <id>`) pour la rendre live.
 name: release
 on:
   push:
@@ -79,5 +82,5 @@ jobs:
             *)   NPM_DIST_TAG="latest" ;;
           esac
 
-          npm publish "$DIST_DIR" --access public --tag "$NPM_DIST_TAG"
+          npm stage publish "$DIST_DIR" --access public --tag "$NPM_DIST_TAG"
           echo "✅ Publie $PACKAGE_NAME@$VERSION sur npm (dist-tag: $NPM_DIST_TAG)"
