@@ -4,9 +4,10 @@
 # depot du package, workflow release.yml). `id-token: write` permet a Actions
 # d'emettre le jeton OIDC que npm echange. La provenance est generee automatiquement.
 #
-# Mode STAGED (schema d'equipe) : la CI ne publie pas en direct, elle STAGE la
-# version (`npm stage publish`). Un mainteneur l'approuve ensuite avec 2FA
-# (npmjs.com -> onglet Staged, ou `npm stage approve <id>`) pour la rendre live.
+# Publication DIRECTE via OIDC (config canonique npm). Le mode staged + OIDC
+# n'etait pas encore fiable dans le CLI npm (27/09/2026) : on publie directement,
+# la securite venant du Trusted Publishing lui-meme (seul ce depot peut publier,
+# aucun token). Le trusted publisher cote npmjs doit autoriser « publish directly ».
 name: release
 on:
   push:
@@ -86,5 +87,5 @@ jobs:
             *)   NPM_DIST_TAG="latest" ;;
           esac
 
-          npm stage publish "$DIST_DIR" --access public --tag "$NPM_DIST_TAG"
+          npm publish "$DIST_DIR" --access public --tag "$NPM_DIST_TAG"
           echo "✅ Publie $PACKAGE_NAME@$VERSION sur npm (dist-tag: $NPM_DIST_TAG)"
