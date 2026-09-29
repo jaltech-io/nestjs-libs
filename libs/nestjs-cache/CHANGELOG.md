@@ -62,7 +62,7 @@
 
 ### 🚀 Features
 
-- **admin:** integre NX monorepo — nestjs-demo-api + vuejs-demo-front
+- **admin:** initial CI/monorepo integration
 
 ### ❤️ Thank You
 
