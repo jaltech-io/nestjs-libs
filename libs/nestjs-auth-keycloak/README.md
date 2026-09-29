@@ -119,12 +119,13 @@ KeycloakProvider.create({
 });
 ```
 
-On the Keycloak side, fix the public hostname and allow dynamic backchannel URLs, so that tokens keep the public issuer whichever URL was used:
+On the Keycloak side, fix the public hostname so that tokens keep the public issuer whichever URL was used to reach Keycloak:
 
 ```
 KC_HOSTNAME=https://auth.example.com
-KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
 ```
+
+If the same application also uses an OIDC client library (e.g. `openid-client` for the login flow), keep its configuration on the public URL and route its requests internally with a custom fetch; leave `KC_HOSTNAME_BACKCHANNEL_DYNAMIC` off so that discovery keeps advertising `https` endpoints.
 
 ## Multi-tenancy
 

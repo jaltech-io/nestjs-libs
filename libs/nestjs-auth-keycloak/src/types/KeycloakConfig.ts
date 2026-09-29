@@ -22,7 +22,7 @@ export type KeycloakConfig = {
    * `http://keycloak:8080` sur un réseau interne. Défaut : `authServerUrl`.
    *
    * L'émetteur attendu reste `${authServerUrl}/realms/${realm}` : côté Keycloak, fixer
-   * `KC_HOSTNAME` sur l'URL publique et `KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true`.
+   * `KC_HOSTNAME` sur l'URL publique.
    */
   backchannelUrl?: string;
 
