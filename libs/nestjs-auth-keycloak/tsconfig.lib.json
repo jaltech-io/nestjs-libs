@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "rootDir": "./src",
+    "outDir": "../../dist/libs/nestjs-auth-keycloak",
+    "declaration": true,
+    "declarationMap": false,
+    "sourceMap": false,
+    "inlineSources": false,
+    "removeComments": false,
+    "noEmit": false,
+    "paths": {
+      "@jaltech/nestjs-auth-core": ["dist/libs/nestjs-auth-core/index.d.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"]
+}

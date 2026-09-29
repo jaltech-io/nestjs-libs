@@ -32,7 +32,14 @@ const npmInvocation = (() => {
   fail('Unable to locate npm CLI');
 })();
 
-const libraries = ['nestjs-auth', 'nestjs-admin-auth', 'nestjs-cache'];
+const libraries = [
+  'nestjs-auth-core',
+  'nestjs-auth-keycloak',
+  'nestjs-auth-entra',
+  'nestjs-auth',
+  'nestjs-admin-auth',
+  'nestjs-cache',
+];
 
 const forbiddenContent = [
   { pattern: /@ui\//, label: 'internal @ui alias' },

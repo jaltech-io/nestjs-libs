@@ -7,13 +7,16 @@ Generic, provider-agnostic NestJS building blocks published to npm under the [`@
 
 | Package | npm | Description | README |
 |---|---|---|---|
-| `@jaltech/nestjs-auth` | [![npm](https://img.shields.io/npm/v/@jaltech/nestjs-auth)](https://www.npmjs.com/package/@jaltech/nestjs-auth) | Provider-agnostic authentication & authorization (Keycloak by default): guards, decorators, UMA fine-grained authorization, UMA decision cache. | [Read](libs/nestjs-auth/README.md) |
+| `@jaltech/nestjs-auth-core` | [![npm](https://img.shields.io/npm/v/@jaltech/nestjs-auth-core)](https://www.npmjs.com/package/@jaltech/nestjs-auth-core) | Provider-agnostic authentication & authorization: contracts, guards, decorators, token sources, application-managed principals, back-channel logout. | [Read](libs/nestjs-auth-core/README.md) |
+| `@jaltech/nestjs-auth-keycloak` | [![npm](https://img.shields.io/npm/v/@jaltech/nestjs-auth-keycloak)](https://www.npmjs.com/package/@jaltech/nestjs-auth-keycloak) | Keycloak provider: OIDC/JWKS validation, UMA with decision cache, multi-realm, Keycloak Organizations. | [Read](libs/nestjs-auth-keycloak/README.md) |
+| `@jaltech/nestjs-auth-entra` | [![npm](https://img.shields.io/npm/v/@jaltech/nestjs-auth-entra)](https://www.npmjs.com/package/@jaltech/nestjs-auth-entra) | Microsoft Entra ID provider: v1/v2 access tokens, tenant, audience, scopes, members-only checks. | [Read](libs/nestjs-auth-entra/README.md) |
+| `@jaltech/nestjs-auth` | [![npm](https://img.shields.io/npm/v/@jaltech/nestjs-auth)](https://www.npmjs.com/package/@jaltech/nestjs-auth) | **Superseded** by `nestjs-auth-core` + a provider package (see the [Keycloak migration guide](libs/nestjs-auth-keycloak/README.md#migrating-from-jaltechnestjs-auth)). Kept for existing consumers. | [Read](libs/nestjs-auth/README.md) |
 | `@jaltech/nestjs-admin-auth` | [![npm](https://img.shields.io/npm/v/@jaltech/nestjs-admin-auth)](https://www.npmjs.com/package/@jaltech/nestjs-admin-auth) | Keycloak Admin REST operations (users, groups, sessions, client roles, authorization services) behind DI tokens. | [Read](libs/nestjs-admin-auth/README.md) |
 | `@jaltech/nestjs-cache` | [![npm](https://img.shields.io/npm/v/@jaltech/nestjs-cache)](https://www.npmjs.com/package/@jaltech/nestjs-cache) | Cache and `express-session` store abstraction (Redis / in-memory) behind DI tokens, following the Dependency Inversion Principle. | [Read](libs/nestjs-cache/README.md) |
 
 ## Package isolation
 
-The packages are intentionally isolated from one another — there are **no cross-imports** between them. When two packages need to cooperate (for example, backing the `nestjs-auth` UMA decision cache with the Redis store from `nestjs-cache`), the **consuming application is the composition root**: it is the only place that imports both and wires them together through dependency injection.
+The packages are intentionally isolated from one another — there are **no cross-imports** between them, with one exception: the auth provider packages (`nestjs-auth-keycloak`, `nestjs-auth-entra`) depend on `nestjs-auth-core` as a peer dependency. When two packages need to cooperate (for example, backing the `nestjs-auth` UMA decision cache with the Redis store from `nestjs-cache`), the **consuming application is the composition root**: it is the only place that imports both and wires them together through dependency injection.
 
 ## Development
 
@@ -21,14 +24,17 @@ This repository is a [pnpm](https://pnpm.io) workspace monorepo.
 
 ```bash
 pnpm install
-pnpm check        # typecheck + build + verify (the full quality gate)
+pnpm check        # typecheck + build + verify + tests with coverage (the full quality gate)
 ```
 
 Individual steps:
 
-- `pnpm typecheck` — `tsc --noEmit` across the three packages
+- `pnpm typecheck` — `tsc --noEmit` across all packages
 - `pnpm build` — compiles each package into `dist/libs/<package>` (a publish-ready npm package)
 - `pnpm verify` — checks that each built package is self-contained, packable, and free of internal path leaks
+- `pnpm test` / `pnpm test:coverage` — Vitest suites (no network), coverage thresholds enforced
+
+See also [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 ## Releasing
 
@@ -46,7 +52,7 @@ A version containing a hyphen (e.g. `0.3.0-beta.1`) is published under the `next
 
 ## Contributing
 
-Contributions are welcome. Please open an issue to discuss substantial changes first, then submit a pull request. Before opening a PR, make sure `pnpm check` passes locally.
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Please open an issue to discuss substantial changes first, then submit a pull request. Before opening a PR, make sure `pnpm check` passes locally. Security issues: see [SECURITY.md](SECURITY.md).
 
 ## License
 

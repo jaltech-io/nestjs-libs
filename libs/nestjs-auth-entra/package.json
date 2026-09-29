@@ -1,0 +1,60 @@
+{
+  "name": "@jaltech/nestjs-auth-entra",
+  "version": "0.1.0",
+  "description": "Microsoft Entra ID (Azure AD) provider — offline JWT validation — for @jaltech/nestjs-auth-core.",
+  "type": "module",
+  "main": "./index.js",
+  "module": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "**/*.js",
+    "**/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jaltech-io/nestjs-libs.git",
+    "directory": "libs/nestjs-auth-entra"
+  },
+  "homepage": "https://github.com/jaltech-io/nestjs-libs/tree/main/libs/nestjs-auth-entra#readme",
+  "bugs": {
+    "url": "https://github.com/jaltech-io/nestjs-libs/issues"
+  },
+  "license": "MIT",
+  "author": "Jaltech",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "keywords": [
+    "nestjs",
+    "entra",
+    "azure-ad",
+    "auth",
+    "oidc",
+    "jwt"
+  ],
+  "peerDependencies": {
+    "@jaltech/nestjs-auth-core": "^0.1.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.0"
+  },
+  "dependencies": {
+    "jose": "^6.2.3"
+  }
+}

@@ -8,16 +8,19 @@
     "node": ">=20"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit -p libs/nestjs-auth/tsconfig.json && tsc --noEmit -p libs/nestjs-admin-auth/tsconfig.json && tsc --noEmit -p libs/nestjs-cache/tsconfig.json",
-    "build": "node libs/nestjs-auth/scripts/build.mjs && node libs/nestjs-admin-auth/scripts/build.mjs && node libs/nestjs-cache/scripts/build.mjs",
+    "typecheck": "tsc --noEmit -p libs/nestjs-auth/tsconfig.json && tsc --noEmit -p libs/nestjs-admin-auth/tsconfig.json && tsc --noEmit -p libs/nestjs-cache/tsconfig.json && tsc --noEmit -p libs/nestjs-auth-core/tsconfig.json && tsc --noEmit -p libs/nestjs-auth-keycloak/tsconfig.json && tsc --noEmit -p libs/nestjs-auth-entra/tsconfig.json",
+    "build": "node libs/nestjs-auth-core/scripts/build.mjs && node libs/nestjs-auth-keycloak/scripts/build.mjs && node libs/nestjs-auth-entra/scripts/build.mjs && node libs/nestjs-auth/scripts/build.mjs && node libs/nestjs-admin-auth/scripts/build.mjs && node libs/nestjs-cache/scripts/build.mjs",
     "verify": "node tools/verify-library-packages.mjs",
-    "check": "pnpm typecheck && pnpm build && pnpm verify"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "check": "pnpm typecheck && pnpm build && pnpm verify && pnpm test:coverage"
   },
   "devDependencies": {
     "@nestjs/common": "^11.1.19",
     "@nestjs/core": "^11.1.19",
     "@types/express-session": "^1.19.0",
     "@types/node": "^25.6.0",
+    "@vitest/coverage-v8": "5.0.2",
     "connect-redis": "^9.0.0",
     "express-session": "^1.19.0",
     "ioredis": "^5.11.1",
@@ -25,6 +28,7 @@
     "redis": "^5.12.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.2"
   }
 }
