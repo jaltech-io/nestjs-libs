@@ -1,9 +1,9 @@
 {
   "name": "@jaltech/nestjs-admin-auth",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "NestJS module for administering Keycloak users, groups, sessions, and client roles.",
   "license": "MIT",
-  "author": "ProfesSkills",
+  "author": "Jaltech",
   "type": "commonjs",
   "main": "./index.js",
   "types": "./index.d.ts",

@@ -1,9 +1,9 @@
 {
   "name": "@jaltech/nestjs-cache",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "NestJS cache and express-session stores with in-memory and Redis backends.",
   "license": "MIT",
-  "author": "ProfesSkills",
+  "author": "Jaltech",
   "type": "commonjs",
   "repository": {
     "type": "git",

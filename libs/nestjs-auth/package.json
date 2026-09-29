@@ -1,6 +1,6 @@
 {
   "name": "@jaltech/nestjs-auth",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Provider-agnostic authentication and authorization module for NestJS with Keycloak support.",
   "type": "module",
   "main": "./index.js",
@@ -34,7 +34,7 @@
     "url": "https://github.com/jaltech-io/nestjs-libs/issues"
   },
   "license": "MIT",
-  "author": "ProfesSkills",
+  "author": "Jaltech",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

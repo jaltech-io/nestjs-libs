@@ -1,3 +1,11 @@
+## 0.3.3 (2026-09-29)
+
+### 📝 Documentation
+
+- Rewrote the README as standalone, English, OSS-standard documentation (badges, features, requirements, quick start, usage, contributing, license); removed all origin-project references.
+- Added a pre-release "not production-ready" notice (to be removed at 1.0.0).
+- Cleaned package metadata (`author`); added a repository-root MIT LICENSE.
+
 ## 0.3.0 (2026-08-22)
 
 ### 🚀 Features

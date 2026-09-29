@@ -1,8 +1,16 @@
+## 0.3.4 (2026-09-29)
+
+### 📝 Documentation
+
+- Rewrote the README as standalone, English, OSS-standard documentation (badges, features, requirements, quick start, usage, contributing, license); removed all origin-project references.
+- Added a pre-release "not production-ready" notice (to be removed at 1.0.0).
+- Cleaned package metadata (`author`); added a repository-root MIT LICENSE.
+
 ## 0.3.1 (2026-08-24)
 
 ### 🩹 Fixes
 
-- **release:** première publication pilotée par la CI de la FORGE de ProjectFlow (Forgejo Actions, workflow release sur tag) — la chaîne npm ne passe plus par un poste local
+- **release:** first release published by the repository CI (GitHub Actions, release-on-tag workflow) — the npm publish chain no longer runs from a local machine
 
 ## 0.2.4 (2026-07-19)
 
