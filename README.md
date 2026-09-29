@@ -17,7 +17,7 @@ The packages are intentionally isolated from one another — there are **no cros
 
 ## Development
 
-This repository is an [Nx](https://nx.dev)-based monorepo managed with [pnpm](https://pnpm.io).
+This repository is a [pnpm](https://pnpm.io) workspace monorepo.
 
 ```bash
 pnpm install
