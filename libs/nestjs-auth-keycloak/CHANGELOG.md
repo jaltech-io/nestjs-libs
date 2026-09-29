@@ -1,3 +1,13 @@
+## 0.2.0 (2026-09-29)
+
+### 🚀 Features
+
+- `backchannelUrl`: call Keycloak on an internal URL for server-to-server requests (JWKS, UMA, userinfo) while still expecting the public issuer.
+
+### 🩹 Fixes
+
+- UMA: transient failures (`429`, `5xx`) are no longer cached as denials. They deny the current request only, and are logged as warnings. Previously one rate-limited call denied the user for the whole cache TTL.
+
 ## 0.1.0 (2026-09-29)
 
 ### 🚀 Features

@@ -35,6 +35,15 @@ describe('KeycloakInstance — offline validation', () => {
     expect(await validate(instance, jwt)).toBe(false);
   });
 
+  it('fetches the JWKS on the backchannel URL and still expects the public issuer', async () => {
+    const internalCerts = `http://keycloak:8080/realms/${REALM}/protocol/openid-connect/certs`;
+    stubFetch({ jwks: [{ urlIncludes: internalCerts, keys: [kp.jwk] }] });
+    const instance = new KeycloakInstance(AUTH_URL, REALM, CLIENT, { backchannelUrl: 'http://keycloak:8080' });
+    expect(await validate(instance, await signJwt(kp, { iss: ISSUER, sub: 'u1' }))).toBeTruthy();
+    const internalIssuer = await signJwt(kp, { iss: `http://keycloak:8080/realms/${REALM}`, sub: 'u1' });
+    expect(await validate(instance, internalIssuer)).toBe(false);
+  });
+
   it('rejects a token with a wrong issuer', async () => {
     stubFetch({ jwks: [{ urlIncludes: CERTS, keys: [kp.jwk] }] });
     const instance = new KeycloakInstance(AUTH_URL, REALM, CLIENT);

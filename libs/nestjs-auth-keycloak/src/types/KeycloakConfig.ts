@@ -18,6 +18,15 @@ export type KeycloakConfig = {
   secret?: string;
 
   /**
+   * URL de base pour les appels serveur à serveur (JWKS, UMA, userinfo), ex.
+   * `http://keycloak:8080` sur un réseau interne. Défaut : `authServerUrl`.
+   *
+   * L'émetteur attendu reste `${authServerUrl}/realms/${realm}` : côté Keycloak, fixer
+   * `KC_HOSTNAME` sur l'URL publique et `KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true`.
+   */
+  backchannelUrl?: string;
+
+  /**
    * Vérifie que l'audience du token correspond au `clientId`. Défaut : `false`.
    *
    * Quand activé : accepte le token si `aud` contient `clientId` OU si `azp === clientId`

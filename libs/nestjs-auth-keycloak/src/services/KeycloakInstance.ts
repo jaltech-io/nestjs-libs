@@ -23,6 +23,8 @@ const DEFAULT_JWKS_COOLDOWN_MS = 30 * 1000;
 
 /** Options internes de `KeycloakInstance`, dérivées de `KeycloakConfig`. */
 export type KeycloakInstanceOptions = {
+  /** URL de base des appels serveur à serveur. Défaut : `authServerUrl`. */
+  backchannelUrl?: string;
   verifyTokenAudience?: boolean;
   umaCacheTtl?: number;
   umaCacheStore?: IUmaCache;
@@ -59,6 +61,8 @@ export class KeycloakInstance implements IAuthInstance {
   private readonly requireOrganization: boolean;
   private readonly realmPublicKeyPem?: string;
   private localKeyPromise?: Promise<ImportedKey>;
+  /** Base des endpoints appelés par le serveur (`backchannelUrl` ou `authServerUrl`). */
+  private readonly realmEndpointBase: string;
 
   accessDenied: (req: any, res: any, next: any) => void;
 
@@ -69,6 +73,7 @@ export class KeycloakInstance implements IAuthInstance {
     options: KeycloakInstanceOptions = {},
   ) {
     this.issuer = `${authServerUrl}/realms/${realm}`;
+    this.realmEndpointBase = `${options.backchannelUrl ?? authServerUrl}/realms/${realm}`;
     this.umaCacheTtl = options.umaCacheTtl ?? DEFAULT_UMA_CACHE_TTL;
     this.verifyTokenAudience = options.verifyTokenAudience ?? false;
     this.requireOrganization = options.requireOrganization ?? false;
@@ -80,7 +85,7 @@ export class KeycloakInstance implements IAuthInstance {
         ? options.minTimeBetweenJwksRequests * 1000
         : DEFAULT_JWKS_COOLDOWN_MS;
 
-    const jwksUri = new URL(`${authServerUrl}/realms/${realm}/protocol/openid-connect/certs`);
+    const jwksUri = new URL(`${this.realmEndpointBase}/protocol/openid-connect/certs`);
     this.JWKS = createRemoteJWKSet(jwksUri, { cacheMaxAge: 15 * 60 * 1000, cooldownDuration: cooldown });
     this.jwks = this.JWKS;
 
@@ -104,7 +109,7 @@ export class KeycloakInstance implements IAuthInstance {
 
   async validateAccessToken(token: IToken, _context?: AuthValidationContext): Promise<IToken | false> {
     try {
-      const res = await fetch(`${this.authServerUrl}/realms/${this.realm}/protocol/openid-connect/userinfo`, {
+      const res = await fetch(`${this.realmEndpointBase}/protocol/openid-connect/userinfo`, {
         headers: { Authorization: `Bearer ${token.token}` },
       });
       if (res.ok) return token;
@@ -199,7 +204,7 @@ export class KeycloakInstance implements IAuthInstance {
           body.append('claim_token_format', 'urn:ietf:params:oauth:token-type:jwt');
         }
 
-        const umaRes = await fetch(`${this.authServerUrl}/realms/${this.realm}/protocol/openid-connect/token`, {
+        const umaRes = await fetch(`${this.realmEndpointBase}/protocol/openid-connect/token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded', Authorization: `Bearer ${accessToken}` },
           body: body.toString(),
@@ -207,17 +212,26 @@ export class KeycloakInstance implements IAuthInstance {
 
         const keycloakMs = Date.now() - t0;
         let granted: boolean;
+        // Seules les vraies décisions sont cachées : 200 (autorisé) et 403 (refusé par la
+        // politique). Une erreur passagère (429, 5xx…) refuse CETTE requête (fail-closed)
+        // sans empoisonner le cache pendant tout le TTL.
+        let isDecision = true;
         if (!umaRes.ok) {
           const errorBody = await umaRes.text();
-          this.logger.verbose(`UMA denied — HTTP ${umaRes.status} — ${errorBody}`);
           granted = false;
+          if (umaRes.status === 403) {
+            this.logger.verbose(`UMA denied — HTTP 403 — ${errorBody}`);
+          } else {
+            isDecision = false;
+            this.logger.warn(`UMA evaluation failed — HTTP ${umaRes.status} — denying this request, not cached.`);
+          }
         } else {
           const json = await umaRes.json();
           granted = json.result !== false;
         }
 
         if (!granted) req.resourceDenied = true;
-        if (this.umaCacheTtl > 0 && cacheKey) {
+        if (isDecision && this.umaCacheTtl > 0 && cacheKey) {
           await this.cache.set(cacheKey, { granted, expiresAt: Date.now() + this.umaCacheTtl }, this.umaCacheTtl);
         }
         req.umaBenchmark = { hit: false, ttlRemainingMs: this.umaCacheTtl > 0 ? this.umaCacheTtl : null, keycloakMs };

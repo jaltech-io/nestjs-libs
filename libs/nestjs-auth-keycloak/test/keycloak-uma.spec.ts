@@ -46,6 +46,54 @@ describe('KeycloakInstance — UMA enforcer', () => {
     expect(req.resourceDenied).toBe(true);
   });
 
+  it('caches a 403 policy denial', async () => {
+    stubFetch({ status: [{ urlIncludes: TOKEN_EP, status: 403, body: 'denied' }] });
+    const instance = new KeycloakInstance(AUTH_URL, REALM, CLIENT, {
+      umaCacheTtl: 60_000,
+      umaCacheStore: new InMemoryUmaCache(),
+    });
+    await runEnforcer(instance, ['Product:Delete'], { accessToken: fakeJwt({ sub: 'u4' }), headers: {} });
+    const req2: any = { accessToken: fakeJwt({ sub: 'u4' }), headers: {} };
+    await runEnforcer(instance, ['Product:Delete'], req2);
+    expect(req2.resourceDenied).toBe(true);
+    expect(req2.umaBenchmark.hit).toBe(true);
+  });
+
+  it.each([429, 500, 503])('denies on HTTP %i without caching it (transient error)', async (status) => {
+    let calls = 0;
+    vi.stubGlobal('fetch', async () => {
+      calls += 1;
+      return calls === 1
+        ? new Response('slow down', { status })
+        : new Response(JSON.stringify({ result: true }), { status: 200 });
+    });
+    const instance = new KeycloakInstance(AUTH_URL, REALM, CLIENT, {
+      umaCacheTtl: 60_000,
+      umaCacheStore: new InMemoryUmaCache(),
+    });
+    const req1: any = { accessToken: fakeJwt({ sub: 'u5' }), headers: {} };
+    await runEnforcer(instance, ['Product:View'], req1);
+    expect(req1.resourceDenied).toBe(true);
+
+    const req2: any = { accessToken: fakeJwt({ sub: 'u5' }), headers: {} };
+    await runEnforcer(instance, ['Product:View'], req2);
+    expect(req2.umaBenchmark.hit).toBe(false);
+    expect(req2.resourceDenied).toBeUndefined();
+    expect(calls).toBe(2);
+  });
+
+  it('calls the backchannel URL for UMA while keeping the public issuer', async () => {
+    const urls: string[] = [];
+    vi.stubGlobal('fetch', async (url: string | URL) => {
+      urls.push(String(url));
+      return new Response(JSON.stringify({ result: true }), { status: 200 });
+    });
+    const instance = new KeycloakInstance(AUTH_URL, REALM, CLIENT, { backchannelUrl: 'http://keycloak:8080' });
+    await runEnforcer(instance, ['Product:View'], { accessToken: fakeJwt({ sub: 'u6' }), headers: {} });
+    expect(urls).toEqual([`http://keycloak:8080/realms/${REALM}${TOKEN_EP}`]);
+    expect(instance.issuer).toBe(`${AUTH_URL}/realms/${REALM}`);
+  });
+
   it('denies when no access token is present', async () => {
     stubFetch({});
     const instance = new KeycloakInstance(AUTH_URL, REALM, CLIENT);
@@ -71,6 +119,17 @@ describe('KeycloakInstance — online validation', () => {
     const instance = new KeycloakInstance(AUTH_URL, REALM, CLIENT);
     const token = { token: fakeJwt({ sub: 'u1' }), content: {} } as any;
     expect(await instance.validateAccessToken(token)).toBeTruthy();
+  });
+
+  it('calls /userinfo on the backchannel URL when configured', async () => {
+    const urls: string[] = [];
+    vi.stubGlobal('fetch', async (url: string | URL) => {
+      urls.push(String(url));
+      return new Response('{}', { status: 200 });
+    });
+    const instance = new KeycloakInstance(AUTH_URL, REALM, CLIENT, { backchannelUrl: 'http://keycloak:8080' });
+    await instance.validateAccessToken({ token: fakeJwt({ sub: 'u1' }), content: {} } as any);
+    expect(urls).toEqual([`http://keycloak:8080/realms/${REALM}${USERINFO}`]);
   });
 
   it('rejects when /userinfo returns 401', async () => {

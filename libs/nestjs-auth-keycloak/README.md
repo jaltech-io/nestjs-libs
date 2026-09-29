@@ -55,6 +55,7 @@ AuthModule.register({
 | `realm` | — (required) | Realm name. |
 | `clientId` | — (required) | Client of this API. |
 | `secret` | — | Client secret (confidential clients). |
+| `backchannelUrl` | `authServerUrl` | Base URL for server-to-server calls (JWKS, UMA, userinfo), e.g. `http://keycloak:8080` on an internal network. The expected issuer stays `authServerUrl`. See [Internal network](#internal-network-backchannel). |
 | `verifyTokenAudience` | `false` | **Recommended: `true`.** Rejects tokens issued for another client of the same realm. Accepts `aud` containing the client, or `azp === clientId` (Keycloak often puts `account` in `aud` and the client in `azp`). |
 | `requireOrganization` | `false` | Reject tokens without a Keycloak Organizations claim. |
 | `umaCacheTtl` | `60000` | UMA decision cache TTL (ms). `0` disables the cache. |
@@ -102,6 +103,28 @@ export class AppModule {}
 ```
 
 Cache keys have the form `<sub>:<resource>:<SCOPE>[,…]` (permissions sorted), so all decisions for a resource can be dropped with the pattern `*:<resource>:*` after a permission change.
+
+Only real decisions are cached: `200` (granted) and `403` (denied by policy). A transient failure (`429`, `5xx`, network error) denies the current request (fail-closed) and is logged as a warning, but it is **not** cached.
+
+## Internal network (backchannel)
+
+When the API and Keycloak run on the same private network, call Keycloak directly instead of going through the public URL and its reverse proxy (which usually rate-limits the token endpoint per client IP; all your users would then share the API's quota):
+
+```typescript
+KeycloakProvider.create({
+  authServerUrl: 'https://auth.example.com', // public URL: expected token issuer
+  backchannelUrl: 'http://keycloak:8080',     // internal URL: JWKS, UMA, userinfo
+  realm: 'acme',
+  clientId: 'api',
+});
+```
+
+On the Keycloak side, fix the public hostname and allow dynamic backchannel URLs, so that tokens keep the public issuer whichever URL was used:
+
+```
+KC_HOSTNAME=https://auth.example.com
+KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
+```
 
 ## Multi-tenancy
 

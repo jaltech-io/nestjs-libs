@@ -57,6 +57,7 @@ export const KeycloakProvider = {
     const umaCacheStore = config.umaCacheStore ?? (umaCacheTtl > 0 ? new InMemoryUmaCache() : undefined);
 
     const instance = new KeycloakInstance(config.authServerUrl, config.realm, config.clientId, {
+      backchannelUrl: config.backchannelUrl,
       verifyTokenAudience: config.verifyTokenAudience,
       umaCacheTtl,
       umaCacheStore,
