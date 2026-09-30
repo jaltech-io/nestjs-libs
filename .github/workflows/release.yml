@@ -37,7 +37,7 @@ jobs:
             *) echo "❌ Tag $TAG invalide (attendu: <lib>@<version>)"; exit 1 ;;
           esac
 
-          PACKAGE_JSON="libs/$PROJECT/package.json"
+          PACKAGE_JSON="$PROJECT/package.json"
           test -f "$PACKAGE_JSON" || { echo "❌ $PACKAGE_JSON introuvable"; exit 1; }
 
           EXPECTED_NAME="@jaltech/$PROJECT"
@@ -60,7 +60,7 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm check
 
-          DIST_DIR="dist/libs/$PROJECT"
+          DIST_DIR="dist/$PROJECT"
           test -d "$DIST_DIR" || { echo "❌ $DIST_DIR introuvable apres build"; exit 1; }
 
           BUILT_NAME=$(node -p "require('./$DIST_DIR/package.json').name")
@@ -70,7 +70,7 @@ jobs:
           test -f "$DIST_DIR/$(node -p "require('./$DIST_DIR/package.json').main")" || { echo "❌ Entree 'main' manquante"; exit 1; }
           test -f "$DIST_DIR/$(node -p "require('./$DIST_DIR/package.json').types")" || { echo "❌ Entree 'types' manquante"; exit 1; }
 
-          npm pack "$DIST_DIR" --dry-run
+          npm pack "./$DIST_DIR" --dry-run
 
           case "$VERSION" in
             *-*) NPM_DIST_TAG="next" ;;
@@ -78,5 +78,5 @@ jobs:
           esac
 
           npm config set //registry.npmjs.org/:_authToken "${NPM_TOKEN}"
-          npm publish "$DIST_DIR" --access public --tag "$NPM_DIST_TAG"
+          npm publish "./$DIST_DIR" --access public --tag "$NPM_DIST_TAG"
           echo "✅ Publie $PACKAGE_NAME@$VERSION sur npm (dist-tag: $NPM_DIST_TAG)"

@@ -51,7 +51,7 @@ importers:
         specifier: ^5.0.2
         version: 5.0.2(@types/node@25.9.5)(@vitest/coverage-v8@5.0.2)(vite@8.3.1(@types/node@25.9.5))
 
-  libs/nestjs-admin-auth:
+  nestjs-admin-auth:
     devDependencies:
       '@nestjs/common':
         specifier: ^11.0.0
@@ -72,7 +72,7 @@ importers:
         specifier: ^6.0.0
         version: 6.0.3
 
-  libs/nestjs-auth:
+  nestjs-auth:
     dependencies:
       '@nestjs/common':
         specifier: ^11.0.0
@@ -93,7 +93,7 @@ importers:
         specifier: ^7.8.0
         version: 7.8.2
 
-  libs/nestjs-auth-core:
+  nestjs-auth-core:
     dependencies:
       '@nestjs/common':
         specifier: ^11.0.0
@@ -111,7 +111,7 @@ importers:
         specifier: ^7.8.0
         version: 7.8.2
 
-  libs/nestjs-auth-entra:
+  nestjs-auth-entra:
     dependencies:
       '@jaltech/nestjs-auth-core':
         specifier: ^0.1.0
@@ -132,7 +132,7 @@ importers:
         specifier: ^7.8.0
         version: 7.8.2
 
-  libs/nestjs-auth-keycloak:
+  nestjs-auth-keycloak:
     dependencies:
       '@jaltech/nestjs-auth-core':
         specifier: ^0.1.0
@@ -153,7 +153,7 @@ importers:
         specifier: ^7.8.0
         version: 7.8.2
 
-  libs/nestjs-cache:
+  nestjs-cache:
     dependencies:
       '@nestjs/common':
         specifier: ^11.0.0

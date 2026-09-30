@@ -1,0 +1,55 @@
+{
+  "name": "@jaltech/nestjs-cache",
+  "version": "0.3.4",
+  "description": "NestJS cache and express-session stores with in-memory and Redis backends.",
+  "license": "MIT",
+  "author": "Jaltech",
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jaltech-io/nestjs-libs.git",
+    "directory": "nestjs-cache"
+  },
+  "homepage": "https://github.com/jaltech-io/nestjs-libs/tree/main/nestjs-cache#readme",
+  "bugs": {
+    "url": "https://github.com/jaltech-io/nestjs-libs/issues"
+  },
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./index.js",
+      "default": "./index.js"
+    }
+  },
+  "files": [
+    "**/*.js",
+    "**/*.d.ts"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "express-session": "^1.18.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.0"
+  },
+  "dependencies": {
+    "connect-redis": "^9.0.0",
+    "ioredis": "^5.10.1",
+    "redis": "^5.12.1"
+  },
+  "keywords": [
+    "nestjs",
+    "cache",
+    "redis",
+    "session",
+    "express-session"
+  ]
+}
