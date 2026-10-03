@@ -63,8 +63,12 @@ export class BackChannelLogoutService {
       throw new BadRequestException('Replayed logout_token');
     }
 
+    // OIDC Back-Channel Logout 1.0, § 2.6 : un logout_token portant un `sid` ne désigne QUE
+    // cette session. Révoquer aussi le sujet bloquait toute NOUVELLE connexion de l'utilisateur
+    // pendant toute la durée de rétention. Le sujet n'est révoqué que sans `sid` (« toutes les
+    // sessions de cet utilisateur »).
     if (event.sid) await this.store.revokeSid(event.sid, expiresAt);
-    if (event.subject) await this.store.revokeSubject(event.provider, event.subject, expiresAt);
+    else if (event.subject) await this.store.revokeSubject(event.provider, event.subject, expiresAt);
 
     this.logger.log(`Back-channel logout processed for issuer ${event.issuer}`);
   }

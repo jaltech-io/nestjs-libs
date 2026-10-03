@@ -1,6 +1,6 @@
 {
   "name": "@jaltech/nestjs-auth-core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Provider-agnostic authentication and authorization contracts, guards, decorators and module for NestJS.",
   "type": "module",
   "main": "./index.js",

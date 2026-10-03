@@ -1,3 +1,9 @@
+## 0.1.1 (2026-10-03)
+
+### 🩹 Fixes
+
+- Back-Channel Logout: a `logout_token` carrying a `sid` now revokes that session only (OIDC Back-Channel Logout 1.0, § 2.6). Revoking the subject as well blocked every new sign-in of the user for the whole retention period. The subject is revoked only when the token has no `sid`.
+
 ## 0.1.0 (2026-09-29)
 
 ### 🚀 Features

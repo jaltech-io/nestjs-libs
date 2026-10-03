@@ -10,13 +10,22 @@ import { FakeInstance } from './fakes';
 const event = { provider: 'keycloak', issuer: 'https://kc/realms/acme', sid: 'sess-1', subject: 'sub-1', jti: 'jti-1' };
 
 describe('BackChannelLogoutService', () => {
-  it('validates, revokes sid and subject', async () => {
+  it('with a sid, revokes that session only (the user can sign in again)', async () => {
     const store = new InMemoryRevocationStore();
     const validator = { validateLogoutToken: vi.fn().mockResolvedValue(event) };
     const service = new BackChannelLogoutService(validator as any, store, { revocationTtlMs: 60_000 });
 
     await service.handle('logout.jwt');
     expect(await store.isSidRevoked('sess-1')).toBe(true);
+    expect(await store.isSubjectRevoked('keycloak', 'sub-1')).toBe(false);
+  });
+
+  it('without a sid, revokes the subject (all its sessions)', async () => {
+    const store = new InMemoryRevocationStore();
+    const validator = { validateLogoutToken: vi.fn().mockResolvedValue({ ...event, sid: undefined }) };
+    const service = new BackChannelLogoutService(validator as any, store, { revocationTtlMs: 60_000 });
+
+    await service.handle('logout.jwt');
     expect(await store.isSubjectRevoked('keycloak', 'sub-1')).toBe(true);
   });
 
