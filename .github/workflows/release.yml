@@ -1,9 +1,11 @@
 # Publication npm — declenchee par un tag "<lib>@<version>" pousse sur GitHub.
-# Authentification par TOKEN : secret d'organisation NPM_TOKEN (token granulaire
-# avec bypass 2FA). L'OIDC Trusted Publishing a ete tente (27/09/2026) mais ne
-# s'authentifiait pas depuis la CI (ENEEDAUTH/E401/E404) ; on publie donc par token,
-# la methode qui a deja publie les 4 packages a la main. Migration vers OIDC a
-# reprendre quand la config npm du trusted publisher sera clarifiee.
+# Authentification par TRUSTED PUBLISHING (OIDC) — aucun jeton a renouveler : GitHub prouve a npm
+# l'identite du workflow (permission id-token: write). Configuration cote npmjs.com, pour CHAQUE
+# package : Settings → Trusted Publisher → GitHub Actions, organisation jaltech-io, depot
+# nestjs-libs, workflow release.yml, « Allowed actions » : AUCUNE case cochee (stage publish seul).
+# PUBLICATION EN ATTENTE (staged publishing, recommandee par npm) : la CI depose la version, elle ne
+# sort qu'une fois APPROUVEE par un humain avec sa double authentification (npmjs.com ou
+# `npm stage approve <id>`). Prerequis : npm >= 11.15, Node >= 22.14. Meme modele que vuejs-libs.
 name: release
 on:
   push:
@@ -12,6 +14,9 @@ on:
 jobs:
   publication:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # OIDC : jeton d'identite pour le trusted publishing npm
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,7 +30,6 @@ jobs:
           corepack enable && corepack prepare pnpm@10.12.1 --activate
       - name: Valider, construire et publier la lib du tag
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           TAG: ${{ github.ref_name }}
           COMMIT_SHA: ${{ github.sha }}
         run: |
@@ -77,6 +81,7 @@ jobs:
             *)   NPM_DIST_TAG="latest" ;;
           esac
 
-          npm config set //registry.npmjs.org/:_authToken "${NPM_TOKEN}"
-          npm publish "./$DIST_DIR" --access public --tag "$NPM_DIST_TAG"
-          echo "✅ Publie $PACKAGE_NAME@$VERSION sur npm (dist-tag: $NPM_DIST_TAG)"
+          # Trusted publishing : jeton OIDC du job, provenance jointe ; version DEPOSEE en attente,
+          # elle sort a l'approbation humaine.
+          npm stage publish "./$DIST_DIR" --access public --tag "$NPM_DIST_TAG" --provenance
+          echo "✅ $PACKAGE_NAME@$VERSION deposee en attente sur npm (dist-tag: $NPM_DIST_TAG) — a approuver sur npmjs.com"
