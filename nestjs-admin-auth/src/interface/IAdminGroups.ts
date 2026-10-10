@@ -37,6 +37,12 @@ export interface IAdminGroups {
   /** Cherche un groupe racine par nom exact. `null` s'il n'existe pas. */
   findGroupByName(name: string): Promise<{ groupId: string } | null>;
 
+  /**
+   * Cherche un groupe par son CHEMIN complet (`/tenant/tenant-admins-42`), sous-groupes compris.
+   * `null` s'il n'existe pas. Permet de reprendre une création interrompue sans doublon.
+   */
+  findGroupByPath(path: string): Promise<{ groupId: string } | null>;
+
   /** Attribue un rôle client au groupe (tous les membres héritent du rôle). */
   assignRole(groupId: string, roleName: string): Promise<void>;
 

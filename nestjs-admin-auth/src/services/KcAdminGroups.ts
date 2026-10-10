@@ -149,6 +149,21 @@ export class KcAdminGroups implements IAdminGroups {
     return match ? { groupId: match.id } : null;
   }
 
+  async findGroupByPath(path: string): Promise<{ groupId: string } | null> {
+    const token = await this.client.getToken();
+    const normalized = path.startsWith('/') ? path.slice(1) : path;
+    const encoded = normalized.split('/').map(encodeURIComponent).join('/');
+
+    const res = await fetch(`${this.client.adminUrl}/group-by-path/${encoded}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`[KcAdminGroups] findGroupByPath: ${res.status} ${await res.text()}`);
+
+    const data: { id: string } = await res.json();
+    return { groupId: data.id };
+  }
+
   async deleteGroup(groupId: string): Promise<void> {
     const token = await this.client.getToken();
 

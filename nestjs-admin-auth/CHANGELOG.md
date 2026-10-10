@@ -3,6 +3,7 @@
 ### 🚀 Features
 
 - **users:** `IAdminUsers.setEnabled(sub, enabled)` — enables or disables an account (`PUT /users/{id}` with `enabled` only; profile, groups and credentials are left untouched).
+- **groups:** `IAdminGroups.findGroupByPath(path)` — lookup by full path, nested groups included (`GET /group-by-path/{path}`); returns `{ groupId }` or `null`.
 - **users:** `IAdminUsers.findUserByEmail(email)` — exact, case-insensitive lookup (`GET /users?email=…&exact=true`); returns `{ id, email, enabled }` or `null`.
 
 ### 🩹 Fixes
