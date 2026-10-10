@@ -1,3 +1,13 @@
+## 0.5.0 (2026-10-10)
+
+### 🚀 Features
+
+- **groups:** `IAdminGroups.deleteRole(roleName)` — deletes a client role of the configured client (`DELETE /clients/{id}/roles/{role-name}`). Idempotent: a missing role (`404`) does not throw.
+
+### 📝 Documentation
+
+- README: documented `deleteRole` in the `IAdminGroups` list.
+
 ## 0.4.0 (2026-10-10)
 
 ### 🚀 Features

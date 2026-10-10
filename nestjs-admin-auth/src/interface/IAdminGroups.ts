@@ -20,6 +20,12 @@ export interface IAdminGroups {
   createRole(roleName: string, description?: string): Promise<void>;
 
   /**
+   * Supprime le rôle client (même client que `createRole`).
+   * Idempotent : un rôle déjà absent (404) n'est pas une erreur.
+   */
+  deleteRole(roleName: string): Promise<void>;
+
+  /**
    * Déclare `childRoleName` comme composant de `parentRoleName` (rôles composites) :
    * tout porteur du rôle parent porte alors effectivement le rôle enfant — le moteur
    * d'évaluation (role policies comprises) traite la composition nativement.

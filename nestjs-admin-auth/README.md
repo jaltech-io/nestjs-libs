@@ -114,7 +114,7 @@ The public API is limited to contracts and tokens — the concrete Keycloak clas
 
 ### `IAdminGroups`
 
-`createRole`, `ensureCompositeRole`, `createGroup` (root or nested via `parentId`), `findGroupByName`, `findGroupByPath` (full path, nested groups included), `assignRole`, `removeRole`, `deleteGroup`, `listGroups`, `listMembers`.
+`createRole`, `deleteRole` (idempotent: an already missing role does not throw), `ensureCompositeRole`, `createGroup` (root or nested via `parentId`), `findGroupByName`, `findGroupByPath` (full path, nested groups included), `assignRole`, `removeRole`, `deleteGroup`, `listGroups`, `listMembers`.
 
 ### `IAdminAuthz`
 

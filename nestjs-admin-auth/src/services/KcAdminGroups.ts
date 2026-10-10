@@ -58,6 +58,22 @@ export class KcAdminGroups implements IAdminGroups {
     this.logger.log(`Client role "${roleName}" créé sous ${this.client.clientId}.`);
   }
 
+  async deleteRole(roleName: string): Promise<void> {
+    const token = await this.client.getToken();
+    const clientUuid = await this.getClientUuid(token);
+
+    const res = await fetch(`${this.client.adminUrl}/clients/${clientUuid}/roles/${encodeURIComponent(roleName)}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.status === 404) {
+      this.logger.log(`Client role "${roleName}" déjà absent — skip.`);
+      return;
+    }
+    if (!res.ok) throw new Error(`[KcAdminGroups] deleteRole: ${res.status} ${await res.text()}`);
+    this.logger.log(`Client role "${roleName}" supprimé sous ${this.client.clientId}.`);
+  }
+
   async ensureCompositeRole(parentRoleName: string, childRoleName: string): Promise<void> {
     const token = await this.client.getToken();
     const clientUuid = await this.getClientUuid(token);
