@@ -79,6 +79,12 @@ export class KcAdminUsers implements IAdminUsers {
     else this.logger.log(`Email invitation envoyé → sub: ${sub}`);
   }
 
+  /**
+   * Idempotent. Keycloak (`PUT /users/{id}/groups/{groupId}`) répond 204 que l'utilisateur
+   * soit déjà membre ou non : il ne rejoint le groupe que s'il n'en est pas déjà membre.
+   * Un 409 (non émis par Keycloak aujourd'hui) est toléré par prudence comme « déjà membre ».
+   * Un 404 (compte ou groupe introuvable) reste une erreur : l'ajout n'a pas eu lieu.
+   */
   async addToGroup(sub: string, groupId: string): Promise<void> {
     const token = await this.client.getToken();
 
@@ -87,10 +93,17 @@ export class KcAdminUsers implements IAdminUsers {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    if (!res.ok) throw new Error(`[KcAdminUsers] addToGroup: ${res.status} ${await res.text()}`);
+    if (!res.ok && res.status !== 409) {
+      throw new Error(`[KcAdminUsers] addToGroup: ${res.status} ${await res.text()}`);
+    }
     this.logger.log(`User ${sub} ajouté au groupe ${groupId}`);
   }
 
+  /**
+   * Idempotent. Keycloak (`DELETE /users/{id}/groups/{groupId}`) répond 204 pour un non-membre
+   * (il ne quitte le groupe que s'il en est membre) et 404 seulement si le compte ou le groupe
+   * n'existe pas : ce 404 est toléré, l'état visé (« pas membre ») étant atteint.
+   */
   async removeFromGroup(sub: string, groupId: string): Promise<void> {
     const token = await this.client.getToken();
 
@@ -116,6 +129,46 @@ export class KcAdminUsers implements IAdminUsers {
       throw new Error(`[KcAdminUsers] deleteUser: ${res.status} ${await res.text()}`);
     }
     this.logger.log(`User supprimé de Keycloak — sub: ${sub}`);
+  }
+
+  /**
+   * `PUT /users/{id}` avec la seule propriété `enabled` : Keycloak applique une mise à jour
+   * partielle (les champs absents de la représentation sont conservés, comme pour updateProfile).
+   */
+  async setEnabled(sub: string, enabled: boolean): Promise<void> {
+    const token = await this.client.getToken();
+
+    const res = await fetch(`${this.client.adminUrl}/users/${sub}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ enabled }),
+    });
+
+    if (!res.ok) throw new Error(`[KcAdminUsers] setEnabled: ${res.status} ${await res.text()}`);
+    this.logger.log(`User ${sub} ${enabled ? 'activé' : 'désactivé'}`);
+  }
+
+  /**
+   * `GET /users?email=…&exact=true`. Keycloak stocke les e-mails en minuscules ; la
+   * correspondance est revérifiée côté client sans tenir compte de la casse, par sûreté.
+   */
+  async findUserByEmail(email: string): Promise<{ id: string; email: string; enabled: boolean } | null> {
+    const wanted = email.trim().toLowerCase();
+    if (!wanted) return null;
+
+    const token = await this.client.getToken();
+    const query = new URLSearchParams({ email: wanted, exact: 'true' });
+
+    const res = await fetch(`${this.client.adminUrl}/users?${query.toString()}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) throw new Error(`[KcAdminUsers] findUserByEmail: ${res.status} ${await res.text()}`);
+
+    const users: { id: string; email?: string; enabled?: boolean }[] = await res.json();
+    const found = users.find((user) => user.email?.toLowerCase() === wanted);
+    if (!found?.email) return null;
+    return { id: found.id, email: found.email, enabled: found.enabled === true };
   }
 
   async updateProfile(sub: string, data: { firstName?: string; lastName?: string }): Promise<void> {

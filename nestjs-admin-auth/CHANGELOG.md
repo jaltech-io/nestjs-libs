@@ -1,3 +1,18 @@
+## 0.4.0 (2026-10-10)
+
+### 🚀 Features
+
+- **users:** `IAdminUsers.setEnabled(sub, enabled)` — enables or disables an account (`PUT /users/{id}` with `enabled` only; profile, groups and credentials are left untouched).
+- **users:** `IAdminUsers.findUserByEmail(email)` — exact, case-insensitive lookup (`GET /users?email=…&exact=true`); returns `{ id, email, enabled }` or `null`.
+
+### 🩹 Fixes
+
+- **users:** `addToGroup` / `removeFromGroup` are now explicitly idempotent: adding an existing member or removing a non-member never throws (`addToGroup` also tolerates a defensive 409; `removeFromGroup` keeps tolerating 404 for a missing user or group).
+
+### 📝 Documentation
+
+- README: documented the new methods and idempotency; moved `createRole` / `ensureCompositeRole` from the `IAdminUsers` list to `IAdminGroups`, where they are declared.
+
 ## 0.3.4 (2026-09-29)
 
 ### 📝 Documentation

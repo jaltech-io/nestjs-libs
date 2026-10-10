@@ -26,14 +26,32 @@ export interface IAdminUsers {
   /** Envoie l'email d'invitation "Définir mon mot de passe" via l'IdP. */
   sendInvitationEmail(sub: string): Promise<void>;
 
-  /** Ajoute l'utilisateur à un groupe (lui attribue le rôle du groupe). */
+  /**
+   * Ajoute l'utilisateur à un groupe (lui attribue le rôle du groupe).
+   * Idempotent : ajouter un membre déjà présent ne lève pas d'erreur.
+   */
   addToGroup(sub: string, groupId: string): Promise<void>;
 
-  /** Retire l'utilisateur d'un groupe. */
+  /**
+   * Retire l'utilisateur d'un groupe.
+   * Idempotent : retirer un non-membre (ou d'un groupe / compte disparu) ne lève pas d'erreur.
+   */
   removeFromGroup(sub: string, groupId: string): Promise<void>;
 
   /** Supprime l'utilisateur de l'IdP. */
   deleteUser(sub: string): Promise<void>;
+
+  /**
+   * Active ou désactive le compte (un compte désactivé ne peut plus se connecter).
+   * Ne modifie que l'état d'activation : profil, groupes et identifiants restent inchangés.
+   */
+  setEnabled(sub: string, enabled: boolean): Promise<void>;
+
+  /**
+   * Recherche un compte par e-mail : correspondance EXACTE, insensible à la casse.
+   * Retourne `null` si aucun compte ne porte cet e-mail.
+   */
+  findUserByEmail(email: string): Promise<{ id: string; email: string; enabled: boolean } | null>;
 
   /** Met à jour le prénom/nom de l'utilisateur. */
   updateProfile(sub: string, data: { firstName?: string; lastName?: string }): Promise<void>;

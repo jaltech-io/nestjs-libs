@@ -11,7 +11,7 @@ A NestJS module for administering a Keycloak realm through its Admin REST API: u
 
 ## Features
 
-- **Users** — create, list, update profile, set password, send invitation email, add/remove group membership, delete.
+- **Users** — create, list, find by email, update profile, enable/disable, set password, send invitation email, add/remove group membership (idempotent), delete.
 - **Sessions** — list a user's active sessions and revoke them individually.
 - **Groups** — create root and nested groups, find-or-create by name, list members, assign/remove client roles, delete.
 - **Client roles** — create roles and compose them (`ensureCompositeRole`).
@@ -103,11 +103,18 @@ The public API is limited to contracts and tokens — the concrete Keycloak clas
 
 ### `IAdminUsers`
 
-`createUser`, `listUsers`, `setPassword`, `sendInvitationEmail`, `addToGroup`, `removeFromGroup`, `updateProfile`, `deleteUser`, `listSessions`, `revokeSession`, `createRole`, `ensureCompositeRole`.
+`createUser`, `listUsers`, `findUserByEmail`, `setPassword`, `sendInvitationEmail`, `addToGroup`, `removeFromGroup`, `setEnabled`, `updateProfile`, `deleteUser`, `listSessions`, `revokeSession`.
+
+| Method | Behavior |
+|---|---|
+| `findUserByEmail(email)` | Exact, case-insensitive match (`GET /users?email=…&exact=true`). Resolves to `{ id, email, enabled }`, or `null` when no account has this email. |
+| `setEnabled(sub, enabled)` | Enables or disables the account (`PUT /users/{id}` with `enabled` only). Profile, groups, and credentials are left untouched. |
+| `addToGroup(sub, groupId)` | Idempotent: adding a user who is already a member does not throw (Keycloak answers `204`). Throws if the user or group does not exist. |
+| `removeFromGroup(sub, groupId)` | Idempotent: removing a non-member does not throw (Keycloak answers `204`); a `404` for a missing user or group is tolerated as well. |
 
 ### `IAdminGroups`
 
-`createGroup` (root or nested via `parentId`), `findGroupByName`, `assignRole`, `removeRole`, `deleteGroup`, `listGroups`, `listMembers`.
+`createRole`, `ensureCompositeRole`, `createGroup` (root or nested via `parentId`), `findGroupByName`, `assignRole`, `removeRole`, `deleteGroup`, `listGroups`, `listMembers`.
 
 ### `IAdminAuthz`
 
