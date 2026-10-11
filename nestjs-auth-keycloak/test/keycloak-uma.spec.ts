@@ -149,6 +149,94 @@ describe('KeycloakInstance — online validation', () => {
   });
 });
 
+describe('KeycloakInstance — UMA cache invalidation', () => {
+  /** Instance avec cache mémoire, peuplé par de vraies décisions (même format de clé que l'enforcer). */
+  async function populatedInstance(): Promise<{ instance: KeycloakInstance }> {
+    vi.stubGlobal('fetch', async () => new Response(JSON.stringify({ result: true }), { status: 200 }));
+    const instance = new KeycloakInstance(AUTH_URL, REALM, CLIENT, {
+      umaCacheTtl: 60_000,
+      umaCacheStore: new InMemoryUmaCache(),
+    });
+    for (const [sub, permissions] of [
+      ['alice', ['invoices:READ']],
+      ['alice', ['orders:READ']],
+      ['bob', ['invoices:UPDATE']],
+      ['bob', ['orders:READ', 'invoices:READ']],
+      ['carol', ['global-invoices:READ']],
+    ] as const) {
+      await runEnforcer(instance, [...permissions], { accessToken: fakeJwt({ sub }), headers: {} });
+    }
+    return { instance };
+  }
+
+  async function isCached(instance: KeycloakInstance, sub: string, permissions: string[]): Promise<boolean> {
+    const req: any = { accessToken: fakeJwt({ sub }), headers: {} };
+    await runEnforcer(instance, permissions, req);
+    return req.umaBenchmark.hit;
+  }
+
+  it('forgetUser drops every decision of that user only', async () => {
+    const { instance } = await populatedInstance();
+    expect(await instance.forgetUser('alice')).toBe(2);
+    expect(await isCached(instance, 'alice', ['invoices:READ'])).toBe(false);
+    expect(await isCached(instance, 'bob', ['invoices:UPDATE'])).toBe(true);
+    expect(await instance.forgetUser('nobody')).toBe(0);
+  });
+
+  it('forgetResource drops every decision involving the resource, multi-permission keys included', async () => {
+    const { instance } = await populatedInstance();
+    expect(await instance.forgetResource('invoices')).toBe(3);
+    expect(await isCached(instance, 'alice', ['invoices:READ'])).toBe(false);
+    expect(await isCached(instance, 'bob', ['invoices:READ', 'orders:READ'])).toBe(false);
+    expect(await isCached(instance, 'alice', ['orders:READ'])).toBe(true);
+    expect(await isCached(instance, 'carol', ['global-invoices:READ'])).toBe(true);
+  });
+
+  it('forgetResource also matches a resource listed after another one', async () => {
+    const { instance } = await populatedInstance();
+    expect(await instance.forgetResource('orders')).toBe(2);
+    expect(await isCached(instance, 'bob', ['invoices:READ', 'orders:READ'])).toBe(false);
+  });
+
+  it.each(['', '*', 'a?b', 'a[0]', 'a\\b'])('rejects the identifier %j', async (value) => {
+    const { instance } = await populatedInstance();
+    await expect(instance.forgetUser(value)).rejects.toThrow(/invalid sub/);
+    await expect(instance.forgetResource(value)).rejects.toThrow(/invalid resource/);
+  });
+
+  it('returns 0 when the cache is disabled', async () => {
+    const instance = new KeycloakInstance(AUTH_URL, REALM, CLIENT, { umaCacheTtl: 0 });
+    expect(await instance.forgetUser('alice')).toBe(0);
+    expect(await instance.forgetResource('invoices')).toBe(0);
+    expect(await new KeycloakInstance(AUTH_URL, REALM, CLIENT).forgetUser('alice')).toBe(0);
+  });
+
+  it('throws when the store cannot delete by pattern', async () => {
+    const instance = new KeycloakInstance(AUTH_URL, REALM, CLIENT, {
+      umaCacheTtl: 60_000,
+      umaCacheStore: { get: async () => null, set: async () => {} },
+    });
+    await expect(instance.forgetUser('alice')).rejects.toThrow(/deleteByPattern/);
+    await expect(instance.forgetResource('invoices')).rejects.toThrow(/deleteByPattern/);
+  });
+
+  it('delegates to the store deleteByPattern (e.g. a Redis store)', async () => {
+    const patterns: string[] = [];
+    const store = {
+      get: async () => null,
+      set: async () => {},
+      deleteByPattern: async (pattern: string) => {
+        patterns.push(pattern);
+        return 1;
+      },
+    };
+    const instance = new KeycloakInstance(AUTH_URL, REALM, CLIENT, { umaCacheTtl: 60_000, umaCacheStore: store });
+    expect(await instance.forgetUser('alice')).toBe(1);
+    expect(await instance.forgetResource('invoices')).toBe(2);
+    expect(patterns).toHaveLength(3);
+  });
+});
+
 describe('InMemoryUmaCache', () => {
   it('stores, expires and evicts entries', async () => {
     vi.useFakeTimers();

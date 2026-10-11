@@ -1,3 +1,14 @@
+## 0.3.0 (2026-10-11)
+
+### 🚀 Features
+
+- `KeycloakInstance.forgetUser(sub)`: drops every cached UMA decision of a user (after a role or group change).
+- `KeycloakInstance.forgetResource(name)`: drops every cached UMA decision involving a resource, for all users, including keys with several permissions (after a permission or policy change).
+- Both return the number of decisions removed, `0` when the cache is disabled. They reject an empty identifier or one containing a glob character, and throw if `umaCacheStore` has no `deleteByPattern`.
+- `InMemoryUmaCache.deleteByPattern(pattern)`, so the default store supports invalidation.
+
+The cache key format is now internal: applications no longer need to build `*:<resource>:*` patterns themselves.
+
 ## 0.2.0 (2026-09-29)
 
 ### 🚀 Features

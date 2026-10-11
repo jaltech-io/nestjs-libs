@@ -11,6 +11,7 @@ import type {
 import { createRemoteJWKSet, importSPKI, jwtVerify, type JWTVerifyGetKey } from 'jose';
 import { parseToken } from '../utils/parseToken';
 import { normalizeOrganizations } from '../utils/organizations';
+import { umaCacheKey, umaResourcePatterns, umaUserPatterns } from '../utils/umaCacheKey';
 import { KeycloakToken } from './KeycloakToken';
 
 /** Type de la clé retournée par `importSPKI` (jose v6 : plus de `KeyLike`). */
@@ -35,6 +36,12 @@ export type KeycloakInstanceOptions = {
 };
 
 const NO_OP_CACHE: IUmaCache = { get: async () => null, set: async () => {} };
+
+/** Store UMA capable de supprimer par motif (ex. `ICache` de `@jaltech/nestjs-cache`, `InMemoryUmaCache`). */
+type PatternDeletableUmaCache = IUmaCache & { deleteByPattern(pattern: string): Promise<number> };
+
+/** Jokers des motifs (glob Redis) : interdits dans un identifiant à oublier. */
+const GLOB_CHARACTERS = /[*?[\]\\]/;
 
 /**
  * Implémentation Keycloak de `IAuthInstance` (OIDC standard : discovery JWKS + UMA).
@@ -245,11 +252,51 @@ export class KeycloakInstance implements IAuthInstance {
     };
   }
 
+  /**
+   * Oublie toutes les décisions UMA en cache d'un utilisateur, à appeler après un
+   * changement de ses rôles ou groupes. Sa prochaine décision est redemandée à Keycloak.
+   *
+   * @param sub - Identifiant (`sub`) de l'utilisateur.
+   * @returns Le nombre de décisions supprimées (`0` si le cache est désactivé).
+   * @throws Si `sub` est vide ou contient un joker (`*`, `?`, `[`, `]`, `\`), ou si le
+   *         store fourni via `umaCacheStore` ne sait pas supprimer par motif (`deleteByPattern`).
+   */
+  async forgetUser(sub: string): Promise<number> {
+    return this.forget('sub', sub, umaUserPatterns(sub));
+  }
+
+  /**
+   * Oublie toutes les décisions UMA en cache qui concernent une ressource, pour tous les
+   * utilisateurs, à appeler après un changement de ses permissions ou politiques.
+   *
+   * @param name - Nom de la ressource, tel que déclaré dans `@Resource(name)`.
+   * @returns Le nombre de décisions supprimées (`0` si le cache est désactivé).
+   * @throws Si `name` est vide ou contient un joker (`*`, `?`, `[`, `]`, `\`), ou si le
+   *         store fourni via `umaCacheStore` ne sait pas supprimer par motif (`deleteByPattern`).
+   */
+  async forgetResource(name: string): Promise<number> {
+    return this.forget('resource', name, umaResourcePatterns(name));
+  }
+
+  private async forget(label: string, value: string, patterns: string[]): Promise<number> {
+    if (!value || GLOB_CHARACTERS.test(value)) {
+      throw new Error(`UMA cache: invalid ${label} ${JSON.stringify(value)} (empty or contains a glob character).`);
+    }
+    if (this.umaCacheTtl <= 0 || this.cache === NO_OP_CACHE) return 0;
+    const store = this.cache as Partial<PatternDeletableUmaCache>;
+    if (typeof store.deleteByPattern !== 'function') {
+      throw new Error('UMA cache: the configured umaCacheStore does not support deleteByPattern.');
+    }
+    let deleted = 0;
+    for (const pattern of patterns) deleted += await store.deleteByPattern(pattern);
+    return deleted;
+  }
+
   private buildCacheKey(accessToken: string, permissions: string[]): string | null {
     try {
       const payload = parseToken(accessToken);
       const sub = payload.sub ?? accessToken.slice(-16);
-      return `${sub}:${[...permissions].sort().join(',')}`;
+      return umaCacheKey(sub, permissions);
     } catch {
       return null;
     }

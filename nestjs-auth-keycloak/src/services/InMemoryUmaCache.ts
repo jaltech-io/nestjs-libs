@@ -22,6 +22,23 @@ export class InMemoryUmaCache implements IUmaCache {
     this.evict();
   }
 
+  /**
+   * Supprime les décisions dont la clé correspond au motif (glob minimal : seul `*` est
+   * joker), comme `ICache.deleteByPattern` de `@jaltech/nestjs-cache`.
+   * @returns Le nombre de décisions supprimées.
+   */
+  async deleteByPattern(pattern: string): Promise<number> {
+    const regex = new RegExp(`^${pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')}$`);
+    let deleted = 0;
+    for (const key of this.store.keys()) {
+      if (regex.test(key)) {
+        this.store.delete(key);
+        deleted++;
+      }
+    }
+    return deleted;
+  }
+
   private evict(): void {
     const now = Date.now();
     for (const [key, entry] of this.store) {

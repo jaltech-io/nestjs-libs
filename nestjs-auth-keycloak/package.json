@@ -1,6 +1,6 @@
 {
   "name": "@jaltech/nestjs-auth-keycloak",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Keycloak provider (OIDC discovery + JWKS + UMA) for @jaltech/nestjs-auth-core.",
   "type": "module",
   "main": "./index.js",

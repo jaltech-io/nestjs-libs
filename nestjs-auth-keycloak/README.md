@@ -102,7 +102,21 @@ import { CacheModule } from '@jaltech/nestjs-cache';
 export class AppModule {}
 ```
 
-Cache keys have the form `<sub>:<resource>:<SCOPE>[,…]` (permissions sorted), so all decisions for a resource can be dropped with the pattern `*:<resource>:*` after a permission change.
+### Invalidating decisions
+
+After a permission change, drop the cached decisions through the auth instance. The cache key format stays internal to this package; do not build patterns yourself.
+
+```typescript
+import { AUTH_INSTANCE } from '@jaltech/nestjs-auth-core';
+import type { KeycloakInstance } from '@jaltech/nestjs-auth-keycloak';
+
+constructor(@Inject(AUTH_INSTANCE) private readonly auth: KeycloakInstance) {}
+
+await this.auth.forgetUser(sub);          // the user's roles or groups changed
+await this.auth.forgetResource('invoices'); // the resource's permissions or policies changed
+```
+
+Both return the number of decisions removed (`0` when the cache is disabled). The store must support `deleteByPattern`, which `InMemoryUmaCache` and the `@jaltech/nestjs-cache` stores do; otherwise they throw. An empty identifier or one containing a glob character (`*`, `?`, `[`, `]`, `\`) is rejected.
 
 Only real decisions are cached: `200` (granted) and `403` (denied by policy). A transient failure (`429`, `5xx`, network error) denies the current request (fail-closed) and is logged as a warning, but it is **not** cached.
 
